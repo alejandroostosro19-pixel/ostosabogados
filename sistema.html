@@ -6,9 +6,6 @@
     <title>Sistema de Registro Laboral - Ostos Abogados</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     
-    <!-- MSAL.js para autenticación -->
-    <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.1/lib/msal-browser.min.js"></script>
-    
     <style>
         :root {
             --primary-green: #2d8659;
@@ -814,29 +811,8 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN AZURE
+        // VARIABLES GLOBALES
         // ============================================
-        const msalConfig = {
-            auth: {
-                clientId: "b6b887bd-dff7-42dc-8804-d72a19703b09",
-                authority: "https://login.microsoftonline.com/common",
-                redirectUri: "https://ostosabogados.netlify.app"
-            },
-            cache: {
-                cacheLocation: "sessionStorage",
-                storeAuthStateInCookie: false
-            }
-        };
-
-        const graphConfig = {
-            graphMeEndpoint: "https://graph.microsoft.com/v1.0/me",
-            graphMailEndpoint: "https://graph.microsoft.com/v1.0/me/sendMail"
-        };
-
-        // Cuenta de destino para almacenamiento
-        const OSTOS_EMAIL = "alejandroostos@aotechsolutions.net";
-        
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
         let currentUser = null;
         let currentType = null;
         let uploadedFiles = {
@@ -864,42 +840,11 @@
             event.preventDefault();
             
             if (confirm('¿Está seguro que desea cerrar sesión?')) {
-                sessionStorage.removeItem('userSession');
-                sessionStorage.removeItem('accessToken');
-                
-                msalInstance.logoutPopup({
-                    mainWindowRedirectUri: "index-microsoft.html"
-                });
+                sessionStorage.clear();
+                window.location.href = 'index.html';
             }
         }
 
-        // ============================================
-        // OBTENER TOKEN DE ACCESO
-        // ============================================
-        async function getAccessToken() {
-            const accounts = msalInstance.getAllAccounts();
-            
-            if (accounts.length === 0) {
-                window.location.href = 'index-microsoft.html';
-                return null;
-            }
-
-            const request = {
-                scopes: ["Files.ReadWrite.All"],
-                account: accounts[0]
-            };
-
-            try {
-                const response = await msalInstance.acquireTokenSilent(request);
-                return response.accessToken;
-            } catch (error) {
-                if (error instanceof msal.InteractionRequiredAuthError) {
-                    const response = await msalInstance.acquireTokenPopup(request);
-                    return response.accessToken;
-                }
-                throw error;
-            }
-        }
 
         // ============================================
         // GESTIÓN DE FORMULARIOS
@@ -968,83 +913,65 @@
         // ============================================
         // SUBIR ARCHIVO A ONEDRIVE
         // ============================================
-        async function uploadToOneDrive(file, folio, tipo) {
+        // ============================================
+        // SUBIR A ONEDRIVE VÍA NETLIFY FUNCTION
+        // ============================================
+        async function uploadToOneDrive(file, folio, tipo, datos) {
             try {
-                const accessToken = await getAccessToken();
+                // Convertir archivo a Base64
+                const base64File = await fileToBase64(file);
                 
-                if (!accessToken) {
-                    throw new Error('No se pudo obtener token de acceso');
-                }
-
-                // Ruta en OneDrive
-                const folderPath = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
                 const fileName = `${folio}.pdf`;
-                const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/RegistrosLaborales/${folderPath}/${fileName}:/content`;
-
-                // Subir archivo
-                const response = await fetch(uploadUrl, {
-                    method: 'PUT',
+                
+                // Preparar payload
+                const payload = {
+                    folio: folio,
+                    tipo: tipo,
+                    fileName: fileName,
+                    fileContent: base64File,
+                    datos: datos
+                };
+                
+                console.log('Enviando archivo a Netlify Function...');
+                
+                // Llamar a Netlify Function
+                const response = await fetch('/.netlify/functions/upload', {
+                    method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': 'application/pdf'
+                        'Content-Type': 'application/json'
                     },
-                    body: file
+                    body: JSON.stringify(payload)
                 });
-
+                
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Error subiendo PDF:', errorText);
-                    throw new Error(`Error al subir PDF: ${response.status}`);
+                    const errorData = await response.json();
+                    console.error('Error en Netlify Function:', errorData);
+                    throw new Error(errorData.error || `Error ${response.status}`);
                 }
-
+                
                 const result = await response.json();
-                console.log('PDF subido exitosamente:', result);
+                console.log('Archivos subidos exitosamente:', result);
+                
                 return result;
+                
             } catch (error) {
                 console.error('Error en uploadToOneDrive:', error);
                 throw error;
             }
         }
-
-        // ============================================
-        // GUARDAR DATOS JSON EN ONEDRIVE
-        // ============================================
-        async function saveDataToOneDrive(data, folio, tipo) {
-            try {
-                const accessToken = await getAccessToken();
-                
-                if (!accessToken) {
-                    throw new Error('No se pudo obtener token de acceso');
-                }
-
-                const folderPath = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
-                const fileName = `${folio}.json`;
-                const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/RegistrosLaborales/${folderPath}/${fileName}:/content`;
-
-                const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { 
-                    type: 'application/json' 
-                });
-
-                const response = await fetch(uploadUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: jsonBlob
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error al guardar JSON: ${response.status}`);
-                }
-
-                const result = await response.json();
-                console.log('JSON guardado exitosamente:', result);
-                return result;
-            } catch (error) {
-                console.error('Error en saveDataToOneDrive:', error);
-                throw error;
-            }
+        
+        // Función auxiliar para convertir archivo a Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    // Quitar el prefijo "data:application/pdf;base64,"
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
 
         // ============================================
@@ -1084,23 +1011,15 @@
             try {
                 // Deshabilitar botón
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner"></span> Guardando en OneDrive...';
+                submitBtn.innerHTML = '<span class="spinner"></span> Guardando archivos...';
                 
-                // 1. Subir PDF a OneDrive
-                await uploadToOneDrive(uploadedFiles[type], folio, type);
+                // Subir PDF y JSON a OneDrive (la función maneja ambos)
+                await uploadToOneDrive(uploadedFiles[type], folio, type, data);
                 
-                // 2. Guardar datos JSON
-                submitBtn.innerHTML = '<span class="spinner"></span> Guardando información...';
-                await saveDataToOneDrive(data, folio, type);
-                
-                // 3. Enviar email de notificación
-                // Email notification deshabilitado (requeriría backend)
-                // await sendEmailNotification(data, folio);
-                
-                // 4. Mostrar modal de éxito
+                // Mostrar modal de éxito
                 showSuccessModal(folio, type);
                 
-                // 5. Limpiar formulario
+                // Limpiar formulario
                 form.reset();
                 uploadedFiles[type] = null;
                 const fileUpload = form.querySelector('.file-upload-wrapper');
