@@ -11,7 +11,7 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
             clientId: process.env.AZURE_CLIENT_ID,
-            authority: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`
+            authority: "https://login.microsoftonline.com/common"  // Permitir cualquier cuenta Microsoft
         })
     };
 };
