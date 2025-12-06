@@ -1,0 +1,16 @@
+{
+  "name": "ostos-registro-laboral",
+  "version": "1.0.0",
+  "description": "Sistema de Registro Laboral - Ostos Abogados",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["netlify", "functions", "azure", "onedrive"],
+  "author": "Ostos Abogados",
+  "license": "ISC",
+  "dependencies": {
+    "@azure/identity": "^4.0.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7"
+  }
+}
