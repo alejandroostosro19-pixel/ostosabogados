@@ -852,7 +852,7 @@
             const userSession = sessionStorage.getItem('userSession');
             
             if (!userSession) {
-                window.location.href = 'index-microsoft.html';
+                window.location.href = 'index.html';
                 return false;
             }
             
@@ -869,7 +869,7 @@
                 sessionStorage.removeItem('accessToken');
                 
                 msalInstance.logoutPopup({
-                    mainWindowRedirectUri: "index-microsoft.html"
+                    mainWindowRedirectUri: "index.html"
                 });
             }
         }
@@ -881,7 +881,7 @@
             const accounts = msalInstance.getAllAccounts();
             
             if (accounts.length === 0) {
-                window.location.href = 'index-microsoft.html';
+                window.location.href = 'index.html';
                 return null;
             }
 
