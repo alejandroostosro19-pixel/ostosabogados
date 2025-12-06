@@ -662,24 +662,36 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Puesto <span class="required">*</span></label>
-                        <input type="text" name="puesto" required placeholder="Cargo desempeñado">
+                        <label>Ubicación <span class="required">*</span></label>
+                        <select name="ubicacion" required>
+                            <option value="">Seleccione la ubicación</option>
+                            <option value="Veracruz">Veracruz</option>
+                            <option value="CDMX">Ciudad de México (CDMX)</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Salario Mensual <span class="required">*</span></label>
-                        <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
+                        <label>Puesto <span class="required">*</span></label>
+                        <input type="text" name="puesto" required placeholder="Cargo desempeñado">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
+                        <label>Salario Mensual <span class="required">*</span></label>
+                        <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
                         <label>Fecha de Ingreso <span class="required">*</span></label>
                         <input type="date" name="fechaIngreso" required>
                     </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
                         <label>Último Día Laborado <span class="required">*</span></label>
                         <input type="date" name="ultimoDia" required>
                     </div>
+                    <div class="form-group"></div>
                 </div>
 
                 <div class="form-group">
@@ -742,24 +754,36 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Puesto <span class="required">*</span></label>
-                        <input type="text" name="puesto" required placeholder="Cargo desempeñado">
+                        <label>Ubicación <span class="required">*</span></label>
+                        <select name="ubicacion" required>
+                            <option value="">Seleccione la ubicación</option>
+                            <option value="Veracruz">Veracruz</option>
+                            <option value="CDMX">Ciudad de México (CDMX)</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Salario Mensual <span class="required">*</span></label>
-                        <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
+                        <label>Puesto <span class="required">*</span></label>
+                        <input type="text" name="puesto" required placeholder="Cargo desempeñado">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
+                        <label>Salario Mensual <span class="required">*</span></label>
+                        <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
                         <label>Fecha de Ingreso <span class="required">*</span></label>
                         <input type="date" name="fechaIngreso" required>
                     </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
                         <label>Último Día Laborado <span class="required">*</span></label>
                         <input type="date" name="ultimoDia" required>
                     </div>
+                    <div class="form-group"></div>
                 </div>
 
                 <div class="form-group">
@@ -996,6 +1020,7 @@
                 fechaRegistro: new Date().toISOString(),
                 empresa: formData.get('empresa'),
                 trabajador: formData.get('trabajador'),
+                ubicacion: formData.get('ubicacion'),
                 puesto: formData.get('puesto'),
                 salario: formData.get('salario'),
                 fechaIngreso: formData.get('fechaIngreso'),
