@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - Sistema de Registro Laboral</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- MSAL.js para autenticación Microsoft -->
+    <script src="https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-green: #2d8659;
+            --dark-bg: #2a2a2a;
+            --white: #ffffff;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --accent: #3fa670;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, var(--dark-bg) 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.6s ease;
+        }
+
+        .login-brand {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent) 100%);
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+            position: relative;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .logo-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .brand-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .brand-divider {
+            width: 80px;
+            height: 4px;
+            background: white;
+            margin-bottom: 25px;
+            opacity: 0.8;
+        }
+
+        .brand-description {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            opacity: 0.95;
+        }
+
+        .login-form-container {
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+        }
+
+        .microsoft-btn {
+            width: 100%;
+            padding: 18px;
+            background: white;
+            color: var(--text-dark);
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .microsoft-btn:hover {
+            border-color: var(--primary-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(45, 134, 89, 0.2);
+        }
+
+        .microsoft-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .info-box {
+            background: #f0f8f4;
+            border-left: 4px solid var(--primary-green);
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+        }
+
+        .alert-success {
+            background: #e8f5f0;
+            border: 1px solid var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(45, 134, 89, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-green);
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 968px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+            .login-brand {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-brand">
+            <div class="logo-container">
+                <div class="logo-icon">⚖️</div>
+                <div class="logo-text">OSTOS ABOGADOS</div>
+            </div>
+
+            <h1 class="brand-title">Sistema de Registro Laboral</h1>
+            <div class="brand-divider"></div>
+            <p class="brand-description">
+                Plataforma profesional para el registro y gestión de citatorios y demandas laborales.
+            </p>
+        </div>
+
+        <div class="login-form-container">
+            <div class="form-header">
+                <h2>Bienvenido</h2>
+                <p>Inicie sesión con su cuenta de Microsoft para acceder al sistema</p>
+            </div>
+
+            <div id="alertBox" class="alert"></div>
+
+            <button id="loginBtn" class="microsoft-btn" onclick="loginWithMicrosoft()">
+                <svg class="microsoft-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23">
+                    <path fill="#f35325" d="M0 0h11v11H0z"/>
+                    <path fill="#81bc06" d="M12 0h11v11H12z"/>
+                    <path fill="#05a6f0" d="M0 12h11v11H0z"/>
+                    <path fill="#ffba08" d="M12 12h11v11H12z"/>
+                </svg>
+                <span>Iniciar Sesión con Microsoft</span>
+            </button>
+
+            <div class="info-box">
+                <strong>📝 Instrucciones:</strong><br>
+                • Use su cuenta corporativa o personal de Microsoft<br>
+                • Cuentas compatibles: Outlook, Hotmail, Office 365<br>
+                • Solo necesita autorizar el acceso una vez
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN - CREDENCIALES DE AZURE
+        // ============================================
+        const msalConfig = {
+            auth: {
+                clientId: "b6b887bd-dff7-42dc-8804-d72a19703b09",
+                authority: "https://login.microsoftonline.com/ceba41d8-dc4c-49b1-8e17-42f9af49071f",
+                redirectUri: window.location.origin
+            },
+            cache: {
+                cacheLocation: "sessionStorage",
+                storeAuthStateInCookie: false
+            }
+        };
+
+        const loginRequest = {
+            scopes: ["openid", "profile", "email", "User.Read"]
+        };
+
+        // Inicializar MSAL
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+        // Función para mostrar alertas
+        function showAlert(message, type = 'error') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} active`;
+            alertBox.textContent = message;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('active');
+            }, 5000);
+        }
+
+        // Función de login
+        async function loginWithMicrosoft() {
+            const loginBtn = document.getElementById('loginBtn');
+            
+            try {
+                // Deshabilitar botón y mostrar spinner
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="spinner"></span> Iniciando sesión...';
+                
+                // Iniciar login con popup
+                const response = await msalInstance.loginPopup(loginRequest);
+                
+                console.log('Login exitoso:', response);
+                
+                // Guardar información del usuario
+                const userData = {
+                    email: response.account.username,
+                    name: response.account.name,
+                    id: response.account.localAccountId,
+                    loginTime: new Date().toISOString()
+                };
+                
+                sessionStorage.setItem('userSession', JSON.stringify(userData));
+                sessionStorage.setItem('accessToken', response.accessToken);
+                
+                showAlert('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+                
+                // Redireccionar al sistema
+                setTimeout(() => {
+                    window.location.href = 'sistema.html';
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error en login:', error);
+                
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = `
+                    <svg class="microsoft-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23">
+                        <path fill="#f35325" d="M0 0h11v11H0z"/>
+                        <path fill="#81bc06" d="M12 0h11v11H12z"/>
+                        <path fill="#05a6f0" d="M0 12h11v11H0z"/>
+                        <path fill="#ffba08" d="M12 12h11v11H12z"/>
+                    </svg>
+                    <span>Iniciar Sesión con Microsoft</span>
+                `;
+                
+                if (error.errorCode === "user_cancelled") {
+                    showAlert('Inicio de sesión cancelado por el usuario.');
+                } else if (error.errorCode === "access_denied") {
+                    showAlert('Acceso denegado. Por favor, acepte los permisos solicitados.');
+                } else {
+                    showAlert('Error al iniciar sesión. Por favor, intente nuevamente.');
+                }
+            }
+        }
+
+        // Verificar si ya hay sesión activa
+        window.addEventListener('load', () => {
+            const userSession = sessionStorage.getItem('userSession');
+            
+            if (userSession) {
+                const userData = JSON.parse(userSession);
+                showAlert(`Bienvenido de nuevo, ${userData.name}. Redirigiendo...`, 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'sistema.html';
+                }, 1500);
+            }
+        });
+
+        // Manejar respuesta de redirección (si usas redirect en lugar de popup)
+        msalInstance.handleRedirectPromise()
+            .then((response) => {
+                if (response) {
+                    console.log('Login con redirect exitoso:', response);
+                    
+                    const userData = {
+                        email: response.account.username,
+                        name: response.account.name,
+                        id: response.account.localAccountId,
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    sessionStorage.setItem('userSession', JSON.stringify(userData));
+                    sessionStorage.setItem('accessToken', response.accessToken);
+                    
+                    window.location.href = 'sistema.html';
+                }
+            })
+            .catch((error) => {
+                console.error('Error handling redirect:', error);
+            });
+    </script>
+</body>
+</html>

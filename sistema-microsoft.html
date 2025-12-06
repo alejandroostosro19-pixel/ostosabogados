@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro Laboral - Ostos Abogados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- MSAL.js para autenticación -->
+    <script src="https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-green: #2d8659;
+            --dark-bg: #2a2a2a;
+            --light-bg: #f5f5f5;
+            --white: #ffffff;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --border-color: #e0e0e0;
+            --accent: #3fa670;
+            --hover-green: #238549;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--white);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary-green), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 35px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: var(--primary-green);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
+            color: white;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .hero-divider {
+            width: 100px;
+            height: 4px;
+            background: var(--primary-green);
+            margin: 0 auto 25px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .type-selection {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .type-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-green);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .type-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .type-card:hover {
+            border-color: var(--primary-green);
+            box-shadow: 0 8px 25px rgba(45, 134, 89, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .type-card.active {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent) 100%);
+            border-color: var(--primary-green);
+            color: white;
+        }
+
+        .type-card.active::before {
+            transform: scaleX(1);
+            background: white;
+        }
+
+        .type-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .type-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .type-description {
+            font-size: 1rem;
+            opacity: 0.85;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            padding: 50px;
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .form-header {
+            border-left: 4px solid var(--primary-green);
+            padding-left: 20px;
+            margin-bottom: 40px;
+        }
+
+        .form-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        label .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: 'Open Sans', sans-serif;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .file-upload-wrapper {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 50px 30px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: var(--primary-green);
+            background: #f0f8f4;
+        }
+
+        .file-upload-wrapper.has-file {
+            border-color: var(--primary-green);
+            border-style: solid;
+            background: #e8f5f0;
+        }
+
+        .upload-icon {
+            font-size: 3.5rem;
+            color: var(--primary-green);
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .file-name-display {
+            margin-top: 15px;
+            color: var(--primary-green);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+        }
+
+        .submit-btn:hover {
+            background: var(--hover-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(45, 134, 89, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            max-width: 550px;
+            width: 90%;
+            padding: 50px 40px;
+            text-align: center;
+            animation: slideUp 0.4s ease;
+        }
+
+        .success-checkmark {
+            width: 90px;
+            height: 90px;
+            background: var(--primary-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 3rem;
+            color: white;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .modal h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+
+        .folio-box {
+            background: linear-gradient(135deg, var(--primary-green), var(--accent));
+            color: white;
+            padding: 25px;
+            border-radius: 6px;
+            margin: 30px 0;
+        }
+
+        .folio-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .folio-number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+
+        .modal-message {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        .modal-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-btn:hover {
+            background: var(--hover-green);
+        }
+
+        .footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .info-alert {
+            background: #e8f5f0;
+            border-left: 4px solid var(--primary-green);
+            padding: 18px 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .info-alert-icon {
+            font-size: 1.3rem;
+            color: var(--primary-green);
+        }
+
+        .info-alert-text {
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 968px) {
+            .nav-menu {
+                display: none;
+            }
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            .type-selection,
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .form-container {
+                padding: 30px 25px;
+            }
+            .main-content {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">⚖️</div>
+                <span>OSTOS ABOGADOS</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#home">INICIO</a></li>
+                    <li><a href="#team">NUESTRO EQUIPO</a></li>
+                    <li><a href="#clients">CLIENTES</a></li>
+                    <li><a href="#contact">CONTACTO</a></li>
+                    <li><a href="#access" class="active">ACCESO</a></li>
+                    <li><a href="#" onclick="logout(event)" style="color: var(--primary-green);">CERRAR SESIÓN</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Sistema de Registro Laboral</h1>
+        <div class="hero-divider"></div>
+        <p>Gestión profesional de citatorios y demandas laborales con seguimiento digital completo</p>
+        <p style="margin-top: 20px; font-size: 1rem; opacity: 0.8;">
+            Bienvenido/a, <strong id="userName"></strong>
+        </p>
+    </section>
+
+    <main class="main-content">
+        <h2 class="section-title">Seleccione el Tipo de Registro</h2>
+
+        <div class="type-selection">
+            <div class="type-card" onclick="selectType('citatorio')">
+                <span class="type-icon">📋</span>
+                <h3 class="type-title">Citatorio</h3>
+                <p class="type-description">Registro y gestión de conciliaciones laborales</p>
+            </div>
+            <div class="type-card" onclick="selectType('demanda')">
+                <span class="type-icon">⚖️</span>
+                <h3 class="type-title">Demanda</h3>
+                <p class="type-description">Registro y seguimiento de demandas laborales</p>
+            </div>
+        </div>
+
+        <!-- Citatorio Form -->
+        <div id="form-citatorio" class="form-container">
+            <div class="form-header">
+                <h2>Registro de Citatorio</h2>
+                <p>Complete todos los campos requeridos para procesar el citatorio de conciliación</p>
+            </div>
+
+            <div class="info-alert">
+                <span class="info-alert-icon">ℹ️</span>
+                <div class="info-alert-text">
+                    <strong>Importante:</strong> Asegúrese de que todos los datos sean correctos antes de enviar. Se generará un folio único para este registro y se guardará en el sistema de Ostos Abogados.
+                </div>
+            </div>
+
+            <form id="citatorioForm" onsubmit="submitForm(event, 'citatorio')">
+                <div class="form-group">
+                    <label>Documento PDF del Citatorio <span class="required">*</span></label>
+                    <div class="file-upload-wrapper" onclick="document.getElementById('pdfCitatorio').click()">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">Haga clic para seleccionar el archivo PDF</div>
+                        <div class="upload-subtext">o arrástrelo aquí (máx. 10MB)</div>
+                        <div class="file-name-display" id="fileNameCitatorio"></div>
+                    </div>
+                    <input type="file" id="pdfCitatorio" accept=".pdf" required onchange="handleFileSelect(this, 'citatorio')">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre de la Empresa <span class="required">*</span></label>
+                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre del Trabajador <span class="required">*</span></label>
+                        <input type="text" name="trabajador" required placeholder="Nombre completo">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Puesto <span class="required">*</span></label>
+                        <input type="text" name="puesto" required placeholder="Cargo desempeñado">
+                    </div>
+                    <div class="form-group">
+                        <label>Salario Mensual <span class="required">*</span></label>
+                        <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha de Ingreso <span class="required">*</span></label>
+                        <input type="date" name="fechaIngreso" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Último Día Laborado <span class="required">*</span></label>
+                        <input type="date" name="ultimoDia" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Jornada de Labores <span class="required">*</span></label>
+                    <select name="jornada" required>
+                        <option value="">Seleccione la jornada laboral</option>
+                        <option value="Diurna (06:00 - 20:00)">Diurna (06:00 - 20:00)</option>
+                        <option value="Nocturna (20:00 - 06:00)">Nocturna (20:00 - 06:00)</option>
+                        <option value="Mixta">Mixta</option>
+                        <option value="Tiempo Completo (8 horas)">Tiempo Completo (8 horas)</option>
+                        <option value="Medio Tiempo (4 horas)">Medio Tiempo (4 horas)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Motivo de la Baja <span class="required">*</span></label>
+                    <textarea name="motivo" required placeholder="Describa de manera clara y concisa las razones de la terminación de la relación laboral..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Registrar Citatorio</button>
+            </form>
+        </div>
+
+        <!-- Demanda Form -->
+        <div id="form-demanda" class="form-container">
+            <div class="form-header">
+                <h2>Registro de Demanda Laboral</h2>
+                <p>Complete todos los campos requeridos para procesar la demanda laboral</p>
+            </div>
+
+            <div class="info-alert">
+                <span class="info-alert-icon">ℹ️</span>
+                <div class="info-alert-text">
+                    <strong>Importante:</strong> Asegúrese de que todos los datos sean correctos antes de enviar. Se generará un folio único para este registro y se guardará en el sistema de Ostos Abogados.
+                </div>
+            </div>
+
+            <form id="demandaForm" onsubmit="submitForm(event, 'demanda')">
+                <div class="form-group">
+                    <label>Documento PDF de la Demanda <span class="required">*</span></label>
+                    <div class="file-upload-wrapper" onclick="document.getElementById('pdfDemanda').click()">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">Haga clic para seleccionar el archivo PDF</div>
+                        <div class="upload-subtext">o arrástrelo aquí (máx. 10MB)</div>
+                        <div class="file-name-display" id="fileNameDemanda"></div>
+                    </div>
+                    <input type="file" id="pdfDemanda" accept=".pdf" required onchange="handleFileSelect(this, 'demanda')">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre de la Empresa <span class="required">*</span></label>
+                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre del Trabajador <span class="required">*</span></label>
+                        <input type="text" name="trabajador" required placeholder="Nombre completo">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Puesto <span class="required">*</span></label>
+                        <input type="text" name="puesto" required placeholder="Cargo desempeñado">
+                    </div>
+                    <div class="form-group">
+                        <label>Salario Mensual <span class="required">*</span></label>
+                        <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha de Ingreso <span class="required">*</span></label>
+                        <input type="date" name="fechaIngreso" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Último Día Laborado <span class="required">*</span></label>
+                        <input type="date" name="ultimoDia" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Jornada de Labores <span class="required">*</span></label>
+                    <select name="jornada" required>
+                        <option value="">Seleccione la jornada laboral</option>
+                        <option value="Diurna (06:00 - 20:00)">Diurna (06:00 - 20:00)</option>
+                        <option value="Nocturna (20:00 - 06:00)">Nocturna (20:00 - 06:00)</option>
+                        <option value="Mixta">Mixta</option>
+                        <option value="Tiempo Completo (8 horas)">Tiempo Completo (8 horas)</option>
+                        <option value="Medio Tiempo (4 horas)">Medio Tiempo (4 horas)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Motivo de la Baja <span class="required">*</span></label>
+                    <textarea name="motivo" required placeholder="Describa de manera clara y concisa las razones de la terminación de la relación laboral..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Registrar Demanda</button>
+            </form>
+        </div>
+    </main>
+
+    <div id="successModal" class="modal-overlay">
+        <div class="modal">
+            <div class="success-checkmark">✓</div>
+            <h2>Registro Exitoso</h2>
+            <p class="modal-message">
+                Su <strong id="tipoRegistro"></strong> ha sido registrado correctamente en el sistema.<br>
+                El documento ha sido guardado de forma segura en OneDrive de Ostos Abogados.
+            </p>
+            <div class="folio-box">
+                <div class="folio-label">Número de Folio</div>
+                <div class="folio-number" id="folioDisplay"></div>
+            </div>
+            <p class="modal-message">
+                Por favor, conserve este número de folio para futuras referencias y seguimiento.<br>
+                Se ha enviado una notificación por correo electrónico a Ostos Abogados.
+            </p>
+            <button class="modal-btn" onclick="closeModal()">Entendido</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Ostos Abogados - Todos los derechos reservados</p>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN AZURE
+        // ============================================
+        const msalConfig = {
+            auth: {
+                clientId: "b6b887bd-dff7-42dc-8804-d72a19703b09",
+                authority: "https://login.microsoftonline.com/ceba41d8-dc4c-49b1-8e17-42f9af49071f",
+                redirectUri: window.location.origin
+            },
+            cache: {
+                cacheLocation: "sessionStorage",
+                storeAuthStateInCookie: false
+            }
+        };
+
+        const graphConfig = {
+            graphMeEndpoint: "https://graph.microsoft.com/v1.0/me",
+            graphMailEndpoint: "https://graph.microsoft.com/v1.0/me/sendMail"
+        };
+
+        // Cuenta de destino para almacenamiento
+        const OSTOS_EMAIL = "alejandroostos@aotechsolutions.net";
+        
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+        let currentUser = null;
+        let currentType = null;
+        let uploadedFiles = {
+            citatorio: null,
+            demanda: null
+        };
+
+        // ============================================
+        // VERIFICACIÓN DE SESIÓN
+        // ============================================
+        async function checkSession() {
+            const userSession = sessionStorage.getItem('userSession');
+            
+            if (!userSession) {
+                window.location.href = 'index-microsoft.html';
+                return false;
+            }
+            
+            currentUser = JSON.parse(userSession);
+            document.getElementById('userName').textContent = currentUser.name;
+            return true;
+        }
+
+        function logout(event) {
+            event.preventDefault();
+            
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                sessionStorage.removeItem('userSession');
+                sessionStorage.removeItem('accessToken');
+                
+                msalInstance.logoutPopup({
+                    mainWindowRedirectUri: "index-microsoft.html"
+                });
+            }
+        }
+
+        // ============================================
+        // OBTENER TOKEN DE ACCESO
+        // ============================================
+        async function getAccessToken() {
+            const accounts = msalInstance.getAllAccounts();
+            
+            if (accounts.length === 0) {
+                window.location.href = 'index-microsoft.html';
+                return null;
+            }
+
+            const request = {
+                scopes: ["Files.ReadWrite.All", "Mail.Send"],
+                account: accounts[0]
+            };
+
+            try {
+                const response = await msalInstance.acquireTokenSilent(request);
+                return response.accessToken;
+            } catch (error) {
+                if (error instanceof msal.InteractionRequiredAuthError) {
+                    const response = await msalInstance.acquireTokenPopup(request);
+                    return response.accessToken;
+                }
+                throw error;
+            }
+        }
+
+        // ============================================
+        // GESTIÓN DE FORMULARIOS
+        // ============================================
+        function selectType(type) {
+            currentType = type;
+            
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            document.querySelectorAll('.form-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            document.getElementById(`form-${type}`).classList.add('active');
+
+            setTimeout(() => {
+                document.getElementById(`form-${type}`).scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
+        }
+
+        function handleFileSelect(input, type) {
+            const file = input.files[0];
+            if (file) {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('El archivo es demasiado grande. El tamaño máximo es 10MB.');
+                    input.value = '';
+                    return;
+                }
+                
+                uploadedFiles[type] = file;
+                const fileNameElement = document.getElementById(`fileName${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                fileNameElement.innerHTML = `<span style="color: var(--primary-green);">✓</span> ${file.name}`;
+                input.closest('.file-upload-wrapper').classList.add('has-file');
+            }
+        }
+
+        function generateFolio(type) {
+            const prefix = type === 'citatorio' ? 'CIT' : 'DEM';
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            return `${prefix}-${year}${month}${day}-${random}`;
+        }
+
+        // ============================================
+        // SUBIR ARCHIVO A ONEDRIVE
+        // ============================================
+        async function uploadToOneDrive(file, folio, tipo) {
+            try {
+                const accessToken = await getAccessToken();
+                
+                if (!accessToken) {
+                    throw new Error('No se pudo obtener token de acceso');
+                }
+
+                // Ruta en OneDrive
+                const folderPath = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
+                const fileName = `${folio}.pdf`;
+                const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/RegistrosLaborales/${folderPath}/${fileName}:/content`;
+
+                // Subir archivo
+                const response = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/pdf'
+                    },
+                    body: file
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error subiendo PDF:', errorText);
+                    throw new Error(`Error al subir PDF: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('PDF subido exitosamente:', result);
+                return result;
+            } catch (error) {
+                console.error('Error en uploadToOneDrive:', error);
+                throw error;
+            }
+        }
+
+        // ============================================
+        // GUARDAR DATOS JSON EN ONEDRIVE
+        // ============================================
+        async function saveDataToOneDrive(data, folio, tipo) {
+            try {
+                const accessToken = await getAccessToken();
+                
+                if (!accessToken) {
+                    throw new Error('No se pudo obtener token de acceso');
+                }
+
+                const folderPath = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
+                const fileName = `${folio}.json`;
+                const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/RegistrosLaborales/${folderPath}/${fileName}:/content`;
+
+                const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { 
+                    type: 'application/json' 
+                });
+
+                const response = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: jsonBlob
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error al guardar JSON: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('JSON guardado exitosamente:', result);
+                return result;
+            } catch (error) {
+                console.error('Error en saveDataToOneDrive:', error);
+                throw error;
+            }
+        }
+
+        // ============================================
+        // ENVIAR EMAIL DE NOTIFICACIÓN
+        // ============================================
+        async function sendEmailNotification(data, folio) {
+            try {
+                const accessToken = await getAccessToken();
+                
+                if (!accessToken) {
+                    console.warn('No se pudo obtener token para enviar email');
+                    return;
+                }
+
+                const tipoTexto = data.tipo === 'citatorio' ? 'Citatorio' : 'Demanda';
+                const fechaFormato = new Date(data.fechaRegistro).toLocaleString('es-MX', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const emailContent = {
+                    message: {
+                        subject: `🆕 Nuevo Registro: ${folio}`,
+                        body: {
+                            contentType: "HTML",
+                            content: `
+                                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                                    <div style="background: linear-gradient(135deg, #2d8659, #3fa670); color: white; padding: 30px; text-align: center;">
+                                        <h1 style="margin: 0; font-size: 24px;">⚖️ Ostos Abogados</h1>
+                                        <p style="margin: 10px 0 0 0; opacity: 0.9;">Sistema de Registro Laboral</p>
+                                    </div>
+                                    
+                                    <div style="background: #f5f5f5; padding: 30px;">
+                                        <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                            <h2 style="color: #2d8659; margin-top: 0; border-bottom: 3px solid #2d8659; padding-bottom: 10px;">
+                                                Nuevo Registro en el Sistema
+                                            </h2>
+                                            
+                                            <div style="background: #e8f5f0; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                                                <p style="margin: 0; font-size: 14px; color: #666;">Número de Folio</p>
+                                                <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: bold; color: #2d8659; letter-spacing: 2px;">
+                                                    ${folio}
+                                                </p>
+                                            </div>
+                                            
+                                            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                                                <tr>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>📋 Tipo:</strong></td>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;">${tipoTexto}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>🏢 Empresa:</strong></td>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;">${data.empresa}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>👤 Trabajador:</strong></td>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;">${data.trabajador}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>💼 Puesto:</strong></td>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;">${data.puesto}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><strong>💰 Salario:</strong></td>
+                                                    <td style="padding: 10px 0; border-bottom: 1px solid #eee;">$${parseFloat(data.salario).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                                                <p style="margin: 0 0 10px 0; font-weight: bold; color: #856404;">👥 Registrado por:</p>
+                                                <p style="margin: 0; color: #856404;"><strong>Nombre:</strong> ${data.clienteNombre}</p>
+                                                <p style="margin: 5px 0 0 0; color: #856404;"><strong>Email:</strong> ${data.clienteEmail}</p>
+                                            </div>
+                                            
+                                            <p style="color: #666; font-size: 14px; margin: 20px 0;">
+                                                <strong>📅 Fecha de registro:</strong> ${fechaFormato}
+                                            </p>
+                                            
+                                            <div style="background: #e8f5f0; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                                                <p style="margin: 0; color: #2d8659;">
+                                                    📎 El archivo PDF y los datos JSON están guardados en tu OneDrive:<br>
+                                                    <strong>OneDrive > RegistrosLaborales > ${tipoTexto}s</strong>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="background: #2a2a2a; color: white; padding: 20px; text-align: center;">
+                                        <p style="margin: 0; font-size: 12px; opacity: 0.8;">
+                                            Sistema de Registro Laboral - Ostos Abogados<br>
+                                            © 2025 Todos los derechos reservados
+                                        </p>
+                                    </div>
+                                </div>
+                            `
+                        },
+                        toRecipients: [
+                            {
+                                emailAddress: {
+                                    address: OSTOS_EMAIL
+                                }
+                            }
+                        ]
+                    },
+                    saveToSentItems: "true"
+                };
+
+                const response = await fetch(graphConfig.graphMailEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(emailContent)
+                });
+
+                if (response.ok) {
+                    console.log('Email enviado exitosamente');
+                } else {
+                    const errorText = await response.text();
+                    console.warn('No se pudo enviar el email:', errorText);
+                }
+            } catch (error) {
+                console.warn('Error al enviar email (no crítico):', error);
+            }
+        }
+
+        // ============================================
+        // ENVIAR FORMULARIO
+        // ============================================
+        async function submitForm(event, type) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const submitBtn = form.querySelector('.submit-btn');
+            const formData = new FormData(form);
+            const folio = generateFolio(type);
+            
+            // Crear objeto de datos
+            const data = {
+                folio: folio,
+                tipo: type,
+                fechaRegistro: new Date().toISOString(),
+                empresa: formData.get('empresa'),
+                trabajador: formData.get('trabajador'),
+                puesto: formData.get('puesto'),
+                salario: formData.get('salario'),
+                fechaIngreso: formData.get('fechaIngreso'),
+                ultimoDia: formData.get('ultimoDia'),
+                jornada: formData.get('jornada'),
+                motivo: formData.get('motivo'),
+                archivoPDF: `${folio}.pdf`,
+                clienteEmail: currentUser.email,
+                clienteNombre: currentUser.name,
+                clienteId: currentUser.id
+            };
+
+            try {
+                // Deshabilitar botón
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner"></span> Guardando en OneDrive...';
+                
+                // 1. Subir PDF a OneDrive
+                await uploadToOneDrive(uploadedFiles[type], folio, type);
+                
+                // 2. Guardar datos JSON
+                submitBtn.innerHTML = '<span class="spinner"></span> Guardando información...';
+                await saveDataToOneDrive(data, folio, type);
+                
+                // 3. Enviar email de notificación
+                submitBtn.innerHTML = '<span class="spinner"></span> Enviando notificación...';
+                await sendEmailNotification(data, folio);
+                
+                // 4. Mostrar modal de éxito
+                showSuccessModal(folio, type);
+                
+                // 5. Limpiar formulario
+                form.reset();
+                uploadedFiles[type] = null;
+                const fileUpload = form.querySelector('.file-upload-wrapper');
+                if (fileUpload) {
+                    fileUpload.classList.remove('has-file');
+                    const fileName = fileUpload.querySelector('.file-name-display');
+                    if (fileName) fileName.innerHTML = '';
+                }
+                
+                submitBtn.disabled = false;
+                submitBtn.textContent = type === 'citatorio' ? 'Registrar Citatorio' : 'Registrar Demanda';
+                
+            } catch (error) {
+                console.error('Error al procesar formulario:', error);
+                submitBtn.disabled = false;
+                submitBtn.textContent = type === 'citatorio' ? 'Registrar Citatorio' : 'Registrar Demanda';
+                alert('Error al guardar el registro. Por favor, intente nuevamente o contacte al administrador.');
+            }
+        }
+
+        function showSuccessModal(folio, type) {
+            const modal = document.getElementById('successModal');
+            const tipoText = type === 'citatorio' ? 'citatorio' : 'demanda';
+            document.getElementById('tipoRegistro').textContent = tipoText;
+            document.getElementById('folioDisplay').textContent = folio;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('active');
+            
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelectorAll('.form-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================
+        // DRAG AND DROP
+        // ============================================
+        document.querySelectorAll('.file-upload-wrapper').forEach(wrapper => {
+            wrapper.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                wrapper.style.borderColor = 'var(--primary-green)';
+                wrapper.style.background = '#f0f8f4';
+            });
+
+            wrapper.addEventListener('dragleave', () => {
+                if (!wrapper.classList.contains('has-file')) {
+                    wrapper.style.borderColor = '';
+                    wrapper.style.background = '';
+                }
+            });
+
+            wrapper.addEventListener('drop', (e) => {
+                e.preventDefault();
+                wrapper.style.borderColor = '';
+                wrapper.style.background = '';
+                
+                const fileInput = wrapper.querySelector('input[type="file"]');
+                const type = fileInput.id.includes('Citatorio') ? 'citatorio' : 'demanda';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect(fileInput, type);
+                }
+            });
+        });
+
+        // Modal click outside
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Verificar sesión al cargar
+        window.addEventListener('load', checkSession);
+    </script>
+</body>
+</html>
