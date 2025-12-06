@@ -37,11 +37,11 @@ exports.handler = async (event, context) => {
         console.log(`Procesando archivo: ${fileName} (${folio})`);
 
         // Validar datos requeridos
-        if (!folio || !tipo || !fileName || !fileContent || !datos) {
+        if (!folio || !tipo || !fileName || !fileContent || !datos || !datos.ubicacion) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Faltan datos requeridos' })
+                body: JSON.stringify({ error: 'Faltan datos requeridos (incluyendo ubicación)' })
             };
         }
 
@@ -64,8 +64,10 @@ exports.handler = async (event, context) => {
         // Convertir base64 a buffer
         const fileBuffer = Buffer.from(fileContent, 'base64');
 
-        // Determinar carpeta
-        const folderPath = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
+        // Determinar carpeta con ubicación
+        const tipoFolder = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
+        const ubicacion = datos.ubicacion; // "Veracruz" o "CDMX"
+        const folderPath = `${tipoFolder}/${ubicacion}`;
         
         // Subir PDF a OneDrive del usuario específico
         const userId = process.env.OSTOS_USER_ID; // Object ID de alejandroostos
