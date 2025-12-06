@@ -936,8 +936,22 @@
                 
                 uploadedFiles[type] = file;
                 const fileNameElement = document.getElementById(`fileName${type.charAt(0).toUpperCase() + type.slice(1)}`);
-                fileNameElement.innerHTML = `<span style="color: var(--primary-green);">✓</span> ${file.name}`;
-                input.closest('.file-upload-wrapper').classList.add('has-file');
+                if (fileNameElement) {
+                    fileNameElement.innerHTML = `<span style="color: var(--primary-green);">✓</span> ${file.name}`;
+                }
+                
+                // Buscar el wrapper correctamente
+                const wrapper = input.parentElement;
+                if (wrapper && wrapper.classList.contains('file-upload-wrapper')) {
+                    wrapper.classList.add('has-file');
+                } else {
+                    // Si el input no está directamente en el wrapper, buscar en el form
+                    const form = input.closest('form');
+                    if (form) {
+                        const wrappers = form.querySelectorAll('.file-upload-wrapper');
+                        wrappers.forEach(w => w.classList.add('has-file'));
+                    }
+                }
             }
         }
 
