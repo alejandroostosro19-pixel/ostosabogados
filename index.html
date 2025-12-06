@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     
     <!-- MSAL.js para autenticación Microsoft -->
-    <script src="https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.1/lib/msal-browser.min.js"></script>
     
     <style>
         :root {
@@ -284,26 +284,46 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN - NETLIFY
+        // CONFIGURACIÓN - DESDE VARIABLES DE ENTORNO
         // ============================================
-        const msalConfig = {
-            auth: {
-                clientId: "b6b887bd-dff7-42dc-8804-d72a19703b09",
-                authority: "https://login.microsoftonline.com/common",
-                redirectUri: "https://ostosabogados.netlify.app"
-            },
-            cache: {
-                cacheLocation: "sessionStorage",
-                storeAuthStateInCookie: false
+        
+        // Obtener config desde el backend
+        let msalConfig = null;
+        let msalInstance = null;
+
+        // Inicializar configuración
+        async function initMSAL() {
+            try {
+                // Llamar a función para obtener config
+                const response = await fetch('/.netlify/functions/get-config');
+                const config = await response.json();
+                
+                msalConfig = {
+                    auth: {
+                        clientId: config.clientId,
+                        authority: config.authority,
+                        redirectUri: window.location.origin
+                    },
+                    cache: {
+                        cacheLocation: "sessionStorage",
+                        storeAuthStateInCookie: false
+                    }
+                };
+
+                msalInstance = new msal.PublicClientApplication(msalConfig);
+                
+                // Manejar respuesta de redirección
+                await handleRedirectResponse();
+                
+            } catch (error) {
+                console.error('Error iniciando MSAL:', error);
+                showAlert('Error al inicializar el sistema de login.');
             }
-        };
+        }
 
         const loginRequest = {
-            scopes: ["openid", "profile", "email", "User.Read", "Files.ReadWrite.All"]
+            scopes: ["openid", "profile", "email", "User.Read"]
         };
-
-        // Inicializar MSAL
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
 
         // Función para mostrar alertas
         function showAlert(message, type = 'error') {
@@ -316,15 +336,20 @@
             }, 5000);
         }
 
-        // Función de login con redirect
+        // Función de login
         function loginWithMicrosoft() {
+            if (!msalInstance) {
+                showAlert('Sistema aún inicializando, por favor espere...');
+                return;
+            }
+
             const loginBtn = document.getElementById('loginBtn');
             
             try {
                 loginBtn.disabled = true;
                 loginBtn.innerHTML = '<span class="spinner"></span> Redirigiendo a Microsoft...';
                 
-                // Usar redirect flow (más confiable que popup)
+                // Usar redirect flow
                 msalInstance.loginRedirect(loginRequest);
                 
             } catch (error) {
@@ -346,8 +371,10 @@
         }
 
         // Manejar respuesta de redirección
-        msalInstance.handleRedirectPromise()
-            .then((response) => {
+        async function handleRedirectResponse() {
+            try {
+                const response = await msalInstance.handleRedirectPromise();
+                
                 if (response) {
                     console.log('Login exitoso:', response);
                     
@@ -360,19 +387,21 @@
                     };
                     
                     sessionStorage.setItem('userSession', JSON.stringify(userData));
-                    sessionStorage.setItem('accessToken', response.accessToken);
                     
                     // Redireccionar al sistema
                     window.location.href = 'sistema.html';
                 }
-            })
-            .catch((error) => {
+            } catch (error) {
                 console.error('Error handling redirect:', error);
                 showAlert('Error al procesar inicio de sesión. Por favor, intente nuevamente.');
-            });
+            }
+        }
 
         // Verificar si ya hay sesión activa
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
+            // Inicializar MSAL primero
+            await initMSAL();
+            
             const userSession = sessionStorage.getItem('userSession');
             
             if (userSession) {
