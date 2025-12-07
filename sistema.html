@@ -725,6 +725,17 @@
                     <textarea name="observaciones" placeholder="Información adicional relevante (opcional)"></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label>Archivos Adicionales (opcional)</label>
+                    <div class="file-upload-wrapper" style="cursor: pointer; min-height: 80px;" onclick="document.getElementById('adicionales-citatorio').click()">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-text">Agregar archivos adicionales (PDF, imágenes, Word, etc.)</div>
+                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 10MB c/u)</div>
+                        <div class="file-name-display" id="adicionalesListCitatorio"></div>
+                    </div>
+                    <input type="file" id="adicionales-citatorio" accept="*/*" multiple style="display: none;" onchange="handleAdditionalFiles(this, 'citatorio')">
+                </div>
+
                 <button type="submit" class="submit-btn">Registrar Citatorio</button>
             </form>
         </div>
@@ -826,6 +837,17 @@
                     <textarea name="observaciones" placeholder="Información adicional relevante (opcional)"></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label>Archivos Adicionales (opcional)</label>
+                    <div class="file-upload-wrapper" style="cursor: pointer; min-height: 80px;" onclick="document.getElementById('adicionales-demanda').click()">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-text">Agregar archivos adicionales (PDF, imágenes, Word, etc.)</div>
+                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 10MB c/u)</div>
+                        <div class="file-name-display" id="adicionalesListDemanda"></div>
+                    </div>
+                    <input type="file" id="adicionales-demanda" accept="*/*" multiple style="display: none;" onchange="handleAdditionalFiles(this, 'demanda')">
+                </div>
+
                 <button type="submit" class="submit-btn">Registrar Demanda</button>
             </form>
         </div>
@@ -865,6 +887,11 @@
         let uploadedFiles = {
             citatorio: null,
             demanda: null
+        };
+        
+        let additionalFiles = {
+            citatorio: [],
+            demanda: []
         };
 
         // ============================================
@@ -947,6 +974,31 @@
             }
         }
 
+        function handleAdditionalFiles(input, type) {
+            const files = Array.from(input.files);
+            const listElement = document.getElementById(`adicionalesList${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            
+            // Validar tamaño
+            for (let file of files) {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 10MB.`);
+                    input.value = '';
+                    return;
+                }
+            }
+            
+            // Guardar archivos
+            additionalFiles[type] = files;
+            
+            // Mostrar lista de archivos
+            if (files.length > 0) {
+                const fileList = files.map(f => `<div style="font-size: 0.85rem; color: var(--primary-green); margin-top: 5px;">✓ ${f.name}</div>`).join('');
+                listElement.innerHTML = fileList;
+            } else {
+                listElement.innerHTML = '';
+            }
+        }
+
         function generateFolio(type) {
             const prefix = type === 'citatorio' ? 'CIT' : 'DEM';
             const date = new Date();
@@ -963,12 +1015,24 @@
         // ============================================
         // SUBIR A ONEDRIVE VÍA NETLIFY FUNCTION
         // ============================================
-        async function uploadToOneDrive(file, folio, tipo, datos) {
+        async function uploadToOneDrive(file, folio, tipo, datos, archivosAdicionales) {
             try {
-                // Convertir archivo a Base64
+                // Convertir archivo principal a Base64
                 const base64File = await fileToBase64(file);
                 
                 const fileName = `${folio}.pdf`;
+                
+                // Convertir archivos adicionales a Base64
+                const additionalFilesData = [];
+                if (archivosAdicionales && archivosAdicionales.length > 0) {
+                    for (let adicional of archivosAdicionales) {
+                        const base64Adicional = await fileToBase64(adicional);
+                        additionalFilesData.push({
+                            fileName: adicional.name, // Mantener nombre original
+                            fileContent: base64Adicional
+                        });
+                    }
+                }
                 
                 // Preparar payload
                 const payload = {
@@ -976,10 +1040,11 @@
                     tipo: tipo,
                     fileName: fileName,
                     fileContent: base64File,
-                    datos: datos
+                    datos: datos,
+                    additionalFiles: additionalFilesData
                 };
                 
-                console.log('Enviando archivo a Netlify Function...');
+                console.log('Enviando archivos a Netlify Function...');
                 
                 // Llamar a Netlify Function
                 const response = await fetch('/.netlify/functions/upload', {
@@ -1065,7 +1130,7 @@
                 submitBtn.innerHTML = '<span class="spinner"></span> Guardando archivos...';
                 
                 // Subir PDF y JSON a OneDrive (la función maneja ambos)
-                await uploadToOneDrive(uploadedFiles[type], folio, type, data);
+                await uploadToOneDrive(uploadedFiles[type], folio, type, data, additionalFiles[type]);
                 
                 // Mostrar modal de éxito
                 showSuccessModal(folio, type);
