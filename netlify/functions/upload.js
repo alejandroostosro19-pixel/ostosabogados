@@ -32,7 +32,7 @@ exports.handler = async (event, context) => {
 
     try {
         // Parsear el body
-        const { folio, tipo, fileName, fileContent, datos } = JSON.parse(event.body);
+        const { folio, tipo, fileName, fileContent, datos, additionalFiles } = JSON.parse(event.body);
 
         console.log(`Procesando archivo: ${fileName} (${folio})`);
 
@@ -64,10 +64,10 @@ exports.handler = async (event, context) => {
         // Convertir base64 a buffer
         const fileBuffer = Buffer.from(fileContent, 'base64');
 
-        // Determinar carpeta con ubicación
+        // Determinar carpeta con ubicación y folio
         const tipoFolder = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
         const ubicacion = datos.ubicacion; // "Veracruz" o "CDMX"
-        const folderPath = `${tipoFolder}/${ubicacion}`;
+        const folderPath = `${tipoFolder}/${ubicacion}/${folio}`; // Nueva estructura con carpeta por folio
         
         // Subir PDF a OneDrive del usuario específico
         const userId = process.env.OSTOS_USER_ID; // Object ID de alejandroostos
@@ -80,6 +80,24 @@ exports.handler = async (event, context) => {
             .put(fileBuffer);
 
         console.log('PDF subido exitosamente');
+
+        // Subir archivos adicionales (si existen)
+        if (additionalFiles && additionalFiles.length > 0) {
+            console.log(`Subiendo ${additionalFiles.length} archivos adicionales...`);
+            
+            for (const adicional of additionalFiles) {
+                const adicionalBuffer = Buffer.from(adicional.fileContent, 'base64');
+                const adicionalPath = `/users/${userId}/drive/root:/RegistrosLaborales/${folderPath}/${adicional.fileName}:/content`;
+                
+                console.log(`Subiendo archivo adicional: ${adicional.fileName}`);
+                
+                await client
+                    .api(adicionalPath)
+                    .put(adicionalBuffer);
+            }
+            
+            console.log('Archivos adicionales subidos exitosamente');
+        }
 
         // Crear archivo JSON con datos
         const jsonFileName = fileName.replace('.pdf', '.json');
