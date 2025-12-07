@@ -1075,6 +1075,15 @@
                     additionalFiles: additionalFilesData
                 };
                 
+                console.log('Payload a enviar:', {
+                    folio: payload.folio,
+                    tipo: payload.tipo,
+                    fileName: payload.fileName,
+                    datos: payload.datos,
+                    additionalFilesCount: payload.additionalFiles.length,
+                    fileContentLength: payload.fileContent.length
+                });
+                
                 console.log('Enviando archivos a Netlify Function...');
                 
                 // Llamar a Netlify Function
@@ -1086,22 +1095,24 @@
                     body: JSON.stringify(payload)
                 });
                 
+                // Leer respuesta como texto primero
+                const responseText = await response.text();
+                
                 if (!response.ok) {
+                    console.error('Error response (status ' + response.status + '):', responseText);
+                    
                     let errorMessage = `Error ${response.status}`;
                     try {
-                        const errorData = await response.json();
+                        const errorData = JSON.parse(responseText);
                         errorMessage = errorData.error || errorMessage;
-                        console.error('Error en Netlify Function:', errorData);
                     } catch (e) {
-                        // Si no puede parsear JSON, intentar leer como texto
-                        const errorText = await response.text();
-                        console.error('Error response:', errorText);
-                        errorMessage = errorText || errorMessage;
+                        errorMessage = responseText || errorMessage;
                     }
                     throw new Error(errorMessage);
                 }
                 
-                const result = await response.json();
+                // Parsear resultado exitoso
+                const result = JSON.parse(responseText);
                 console.log('Archivos subidos exitosamente:', result);
                 
                 return result;
