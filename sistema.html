@@ -648,7 +648,7 @@
                     <div class="file-upload-wrapper" onclick="document.getElementById('pdfCitatorio').click()">
                         <div class="upload-icon">📄</div>
                         <div class="upload-text">Haga clic para seleccionar el archivo PDF</div>
-                        <div class="upload-subtext">o arrástrelo aquí (máx. 10MB)</div>
+                        <div class="upload-subtext">o arrástrelo aquí (máx. 50MB)</div>
                         <div class="file-name-display" id="fileNameCitatorio"></div>
                     </div>
                     <input type="file" id="pdfCitatorio" accept=".pdf" required onchange="handleFileSelect(this, 'citatorio')">
@@ -676,7 +676,7 @@
                     </div>
                     <div class="form-group">
                         <label>Teléfono de Contacto <span class="required">*</span></label>
-                        <input type="tel" name="telefono" required placeholder="10 dígitos" pattern="[0-9]{10}">
+                        <input type="tel" name="telefono" required placeholder="Ej: 2281234567">
                     </div>
                 </div>
 
@@ -730,7 +730,7 @@
                     <div class="file-upload-wrapper" style="cursor: pointer; min-height: 80px;" onclick="document.getElementById('adicionales-citatorio').click()">
                         <div class="upload-icon">📎</div>
                         <div class="upload-text">Agregar archivos adicionales (PDF, imágenes, Word, etc.)</div>
-                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 10MB c/u)</div>
+                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 50MB c/u)</div>
                         <div class="file-name-display" id="adicionalesListCitatorio"></div>
                     </div>
                     <input type="file" id="adicionales-citatorio" accept="*/*" multiple style="display: none;" onchange="handleAdditionalFiles(this, 'citatorio')">
@@ -760,7 +760,7 @@
                     <div class="file-upload-wrapper" onclick="document.getElementById('pdfDemanda').click()">
                         <div class="upload-icon">📄</div>
                         <div class="upload-text">Haga clic para seleccionar el archivo PDF</div>
-                        <div class="upload-subtext">o arrástrelo aquí (máx. 10MB)</div>
+                        <div class="upload-subtext">o arrástrelo aquí (máx. 50MB)</div>
                         <div class="file-name-display" id="fileNameDemanda"></div>
                     </div>
                     <input type="file" id="pdfDemanda" accept=".pdf" required onchange="handleFileSelect(this, 'demanda')">
@@ -788,7 +788,7 @@
                     </div>
                     <div class="form-group">
                         <label>Teléfono de Contacto <span class="required">*</span></label>
-                        <input type="tel" name="telefono" required placeholder="10 dígitos" pattern="[0-9]{10}">
+                        <input type="tel" name="telefono" required placeholder="Ej: 2281234567">
                     </div>
                 </div>
 
@@ -842,7 +842,7 @@
                     <div class="file-upload-wrapper" style="cursor: pointer; min-height: 80px;" onclick="document.getElementById('adicionales-demanda').click()">
                         <div class="upload-icon">📎</div>
                         <div class="upload-text">Agregar archivos adicionales (PDF, imágenes, Word, etc.)</div>
-                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 10MB c/u)</div>
+                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 50MB c/u)</div>
                         <div class="file-name-display" id="adicionalesListDemanda"></div>
                     </div>
                     <input type="file" id="adicionales-demanda" accept="*/*" multiple style="display: none;" onchange="handleAdditionalFiles(this, 'demanda')">
@@ -947,7 +947,7 @@
         function handleFileSelect(input, type) {
             const file = input.files[0];
             if (file) {
-                if (file.size > 10 * 1024 * 1024) {
+                if (file.size > 50 * 1024 * 1024) {
                     alert('El archivo es demasiado grande. El tamaño máximo es 10MB.');
                     input.value = '';
                     return;
@@ -975,24 +975,55 @@
         }
 
         function handleAdditionalFiles(input, type) {
-            const files = Array.from(input.files);
+            const newFiles = Array.from(input.files);
             const listElement = document.getElementById(`adicionalesList${type.charAt(0).toUpperCase() + type.slice(1)}`);
             
-            // Validar tamaño
-            for (let file of files) {
-                if (file.size > 10 * 1024 * 1024) {
-                    alert(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 10MB.`);
+            // Validar tamaño de los nuevos archivos
+            for (let file of newFiles) {
+                if (file.size > 50 * 1024 * 1024) {
+                    alert(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 50MB.`);
                     input.value = '';
                     return;
                 }
             }
             
-            // Guardar archivos
-            additionalFiles[type] = files;
+            // Agregar archivos a los existentes (acumular en lugar de reemplazar)
+            if (!additionalFiles[type]) {
+                additionalFiles[type] = [];
+            }
+            additionalFiles[type] = [...additionalFiles[type], ...newFiles];
             
-            // Mostrar lista de archivos
-            if (files.length > 0) {
-                const fileList = files.map(f => `<div style="font-size: 0.85rem; color: var(--primary-green); margin-top: 5px;">✓ ${f.name}</div>`).join('');
+            // Mostrar lista completa de archivos
+            if (additionalFiles[type].length > 0) {
+                const fileList = additionalFiles[type].map((f, index) => 
+                    `<div style="font-size: 0.85rem; color: var(--primary-green); margin-top: 5px; display: flex; align-items: center; gap: 10px;">
+                        <span>✓ ${f.name}</span>
+                        <button type="button" onclick="removeAdditionalFile('${type}', ${index})" style="background: #ff4444; color: white; border: none; border-radius: 3px; padding: 2px 8px; cursor: pointer; font-size: 0.75rem;">✕</button>
+                    </div>`
+                ).join('');
+                listElement.innerHTML = fileList;
+            } else {
+                listElement.innerHTML = '';
+            }
+            
+            // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
+            input.value = '';
+        }
+        
+        function removeAdditionalFile(type, index) {
+            // Eliminar archivo del array
+            additionalFiles[type].splice(index, 1);
+            
+            // Actualizar la lista visual
+            const listElement = document.getElementById(`adicionalesList${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            
+            if (additionalFiles[type].length > 0) {
+                const fileList = additionalFiles[type].map((f, i) => 
+                    `<div style="font-size: 0.85rem; color: var(--primary-green); margin-top: 5px; display: flex; align-items: center; gap: 10px;">
+                        <span>✓ ${f.name}</span>
+                        <button type="button" onclick="removeAdditionalFile('${type}', ${i})" style="background: #ff4444; color: white; border: none; border-radius: 3px; padding: 2px 8px; cursor: pointer; font-size: 0.75rem;">✕</button>
+                    </div>`
+                ).join('');
                 listElement.innerHTML = fileList;
             } else {
                 listElement.innerHTML = '';
