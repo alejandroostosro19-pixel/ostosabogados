@@ -1041,85 +1041,95 @@
         }
 
         // ============================================
-        // SUBIR ARCHIVO A ONEDRIVE
-        // ============================================
-        // ============================================
-        // SUBIR A ONEDRIVE VÍA NETLIFY FUNCTION
+        // SUBIR ARCHIVO A ONEDRIVE (DIRECTO)
         // ============================================
         async function uploadToOneDrive(file, folio, tipo, datos, archivosAdicionales) {
             try {
-                // Convertir archivo principal a Base64
-                const base64File = await fileToBase64(file);
+                const tipoFolder = tipo === 'citatorio' ? 'Citatorios' : 'Demandas';
+                const ubicacion = datos.ubicacion;
+                const folderPath = `${tipoFolder}/${ubicacion}/${folio}`;
                 
-                const fileName = `${folio}.pdf`;
+                console.log('Iniciando subida directa a OneDrive...');
                 
-                // Convertir archivos adicionales a Base64
-                const additionalFilesData = [];
+                // 1. Subir PDF principal
+                await uploadFileDirect(file, `${folio}.pdf`, folderPath);
+                console.log('PDF principal subido ✓');
+                
+                // 2. Subir archivos adicionales
                 if (archivosAdicionales && archivosAdicionales.length > 0) {
+                    console.log(`Subiendo ${archivosAdicionales.length} archivos adicionales...`);
                     for (let adicional of archivosAdicionales) {
-                        const base64Adicional = await fileToBase64(adicional);
-                        additionalFilesData.push({
-                            fileName: adicional.name, // Mantener nombre original
-                            fileContent: base64Adicional
-                        });
+                        await uploadFileDirect(adicional, adicional.name, folderPath);
+                        console.log(`✓ ${adicional.name}`);
                     }
                 }
                 
-                // Preparar payload
-                const payload = {
-                    folio: folio,
-                    tipo: tipo,
-                    fileName: fileName,
-                    fileContent: base64File,
-                    datos: datos,
-                    additionalFiles: additionalFilesData
-                };
-                
-                console.log('Payload a enviar:', {
-                    folio: payload.folio,
-                    tipo: payload.tipo,
-                    fileName: payload.fileName,
-                    datos: payload.datos,
-                    additionalFilesCount: payload.additionalFiles.length,
-                    fileContentLength: payload.fileContent.length
-                });
-                
-                console.log('Enviando archivos a Netlify Function...');
-                
-                // Llamar a Netlify Function
-                const response = await fetch('/.netlify/functions/upload', {
+                // 3. Guardar metadata JSON
+                console.log('Guardando metadata...');
+                const metadataResponse = await fetch('/.netlify/functions/upload', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        folio: folio,
+                        folderPath: folderPath,
+                        datos: datos
+                    })
                 });
                 
-                // Leer respuesta como texto primero
-                const responseText = await response.text();
-                
-                if (!response.ok) {
-                    console.error('Error response (status ' + response.status + '):', responseText);
-                    
-                    let errorMessage = `Error ${response.status}`;
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        errorMessage = errorData.error || errorMessage;
-                    } catch (e) {
-                        errorMessage = responseText || errorMessage;
-                    }
-                    throw new Error(errorMessage);
+                if (!metadataResponse.ok) {
+                    throw new Error('Error guardando metadata');
                 }
                 
-                // Parsear resultado exitoso
-                const result = JSON.parse(responseText);
-                console.log('Archivos subidos exitosamente:', result);
+                console.log('Metadata guardada ✓');
                 
-                return result;
+                return { success: true, folio: folio };
                 
             } catch (error) {
                 console.error('Error en uploadToOneDrive:', error);
                 throw error;
+            }
+        }
+        
+        // Función para subir archivo directamente a OneDrive
+        async function uploadFileDirect(file, fileName, folderPath) {
+            // 1. Obtener URL de subida
+            const sessionResponse = await fetch('/.netlify/functions/create-upload-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fileName: fileName,
+                    folderPath: folderPath
+                })
+            });
+            
+            if (!sessionResponse.ok) {
+                throw new Error('Error creando sesión de subida');
+            }
+            
+            const { uploadUrl } = await sessionResponse.json();
+            
+            // 2. Subir archivo en chunks (para archivos grandes)
+            const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+            const fileSize = file.size;
+            let start = 0;
+            
+            while (start < fileSize) {
+                const end = Math.min(start + chunkSize, fileSize);
+                const chunk = file.slice(start, end);
+                
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Range': `bytes ${start}-${end - 1}/${fileSize}`
+                    },
+                    body: chunk
+                });
+                
+                if (!uploadResponse.ok && uploadResponse.status !== 202) {
+                    throw new Error(`Error subiendo chunk: ${uploadResponse.status}`);
+                }
+                
+                start = end;
             }
         }
         
