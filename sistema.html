@@ -676,7 +676,7 @@
                     </div>
                     <div class="form-group">
                         <label>Teléfono de Contacto <span class="required">*</span></label>
-                        <input type="tel" name="telefono" required placeholder="Ej: 2281234567">
+                        <input type="text" name="telefono" required placeholder="Número de contacto">
                     </div>
                 </div>
 
@@ -788,7 +788,7 @@
                     </div>
                     <div class="form-group">
                         <label>Teléfono de Contacto <span class="required">*</span></label>
-                        <input type="tel" name="telefono" required placeholder="Ej: 2281234567">
+                        <input type="text" name="telefono" required placeholder="Número de contacto">
                     </div>
                 </div>
 
@@ -1161,7 +1161,7 @@
                 submitBtn.innerHTML = '<span class="spinner"></span> Guardando archivos...';
                 
                 // Subir PDF y JSON a OneDrive (la función maneja ambos)
-                await uploadToOneDrive(uploadedFiles[type], folio, type, data, additionalFiles[type]);
+                await uploadToOneDrive(uploadedFiles[type], folio, type, data, additionalFiles[type] || []);
                 
                 // Mostrar modal de éxito
                 showSuccessModal(folio, type);
@@ -1169,6 +1169,14 @@
                 // Limpiar formulario
                 form.reset();
                 uploadedFiles[type] = null;
+                additionalFiles[type] = []; // Limpiar archivos adicionales
+                
+                // Limpiar visualización de archivos adicionales
+                const adicionalesListElement = document.getElementById(`adicionalesList${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                if (adicionalesListElement) {
+                    adicionalesListElement.innerHTML = '';
+                }
+                
                 const fileUpload = form.querySelector('.file-upload-wrapper');
                 if (fileUpload) {
                     fileUpload.classList.remove('has-file');
