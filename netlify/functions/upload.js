@@ -32,16 +32,82 @@ exports.handler = async (event, context) => {
 
     try {
         // Parsear el body
-        const { folio, tipo, fileName, fileContent, datos, additionalFiles } = JSON.parse(event.body);
-
-        console.log(`Procesando archivo: ${fileName} (${folio})`);
-
-        // Validar datos requeridos
-        if (!folio || !tipo || !fileName || !fileContent || !datos || !datos.ubicacion) {
+        let parsedBody;
+        try {
+            parsedBody = JSON.parse(event.body);
+        } catch (parseError) {
+            console.error('Error parseando body:', parseError);
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Faltan datos requeridos (incluyendo ubicación)' })
+                body: JSON.stringify({ error: 'Invalid JSON in request body' })
+            };
+        }
+
+        const { folio, tipo, fileName, fileContent, datos, additionalFiles } = parsedBody;
+
+        console.log('Request recibido:', {
+            folio,
+            tipo,
+            fileName,
+            hasFileContent: !!fileContent,
+            fileContentLength: fileContent ? fileContent.length : 0,
+            datos,
+            additionalFilesCount: additionalFiles ? additionalFiles.length : 0
+        });
+
+        // Validar datos requeridos
+        if (!folio) {
+            console.error('Falta folio');
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Falta folio' })
+            };
+        }
+        
+        if (!tipo) {
+            console.error('Falta tipo');
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Falta tipo' })
+            };
+        }
+        
+        if (!fileName) {
+            console.error('Falta fileName');
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Falta fileName' })
+            };
+        }
+        
+        if (!fileContent) {
+            console.error('Falta fileContent');
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Falta fileContent' })
+            };
+        }
+        
+        if (!datos) {
+            console.error('Falta datos');
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Falta datos' })
+            };
+        }
+        
+        if (!datos.ubicacion) {
+            console.error('Falta datos.ubicacion');
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Falta ubicación en datos' })
             };
         }
 
