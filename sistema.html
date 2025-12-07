@@ -1087,9 +1087,18 @@
                 });
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Error en Netlify Function:', errorData);
-                    throw new Error(errorData.error || `Error ${response.status}`);
+                    let errorMessage = `Error ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                        console.error('Error en Netlify Function:', errorData);
+                    } catch (e) {
+                        // Si no puede parsear JSON, intentar leer como texto
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
                 }
                 
                 const result = await response.json();
