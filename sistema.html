@@ -593,12 +593,7 @@
             </div>
             <nav>
                 <ul class="nav-menu">
-                    <li><a href="#home">INICIO</a></li>
-                    <li><a href="#team">NUESTRO EQUIPO</a></li>
-                    <li><a href="#clients">CLIENTES</a></li>
-                    <li><a href="#contact">CONTACTO</a></li>
-                    <li><a href="#access" class="active">ACCESO</a></li>
-                    <li><a href="#" onclick="logout(event)" style="color: var(--primary-green);">CERRAR SESIÓN</a></li>
+                    <li><a href="#" onclick="logout(event)" style="color: var(--primary-green); font-weight: 600;">CERRAR SESIÓN</a></li>
                 </ul>
             </nav>
         </div>
@@ -868,6 +863,10 @@
             <p class="modal-message">
                 Por favor, conserve este número de folio para futuras referencias y seguimiento.
             </p>
+            <p class="modal-message" style="background: #f0f8f4; padding: 15px; border-radius: 6px; border-left: 4px solid var(--primary-green); margin-top: 20px;">
+                <strong>📞 Próximos pasos:</strong><br>
+                Un abogado de nuestro equipo se pondrá en contacto con usted en los próximos días para darle seguimiento a su caso.
+            </p>
             <button class="modal-btn" onclick="closeModal()">Entendido</button>
         </div>
     </div>
@@ -1032,12 +1031,21 @@
 
         function generateFolio(type) {
             const prefix = type === 'citatorio' ? 'CIT' : 'DEM';
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-            return `${prefix}-${year}${month}${day}-${random}`;
+            const year = new Date().getFullYear();
+            
+            // Obtener último número consecutivo del localStorage
+            const storageKey = `lastFolio_${prefix}_${year}`;
+            let lastNumber = parseInt(localStorage.getItem(storageKey) || '0');
+            
+            // Incrementar
+            lastNumber++;
+            
+            // Guardar nuevo número
+            localStorage.setItem(storageKey, lastNumber.toString());
+            
+            // Formato: CIT-2024-0001 o DEM-2024-0001
+            const consecutivo = String(lastNumber).padStart(4, '0');
+            return `${prefix}-${year}-${consecutivo}`;
         }
 
         // ============================================
