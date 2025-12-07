@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro Laboral - Ostos Abogados</title>
+    <title>Registro Citatorios y Demandas - Ostos Abogados</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
@@ -605,10 +605,9 @@
     </header>
 
     <section class="hero">
-        <h1>Sistema de Registro Laboral</h1>
+        <h1>Registro Citatorios y Demandas</h1>
         <div class="hero-divider"></div>
-        <p>Gestión profesional de citatorios y demandas laborales con seguimiento digital completo</p>
-        <p style="margin-top: 20px; font-size: 1rem; opacity: 0.8;">
+        <p style="margin-top: 20px; font-size: 1rem;">
             Bienvenido/a, <strong id="userName"></strong>
         </p>
     </section>
@@ -619,12 +618,12 @@
         <div class="type-selection">
             <div class="type-card" onclick="selectType('citatorio')">
                 <span class="type-icon">📋</span>
-                <h3 class="type-title">Citatorio</h3>
+                <h3 class="type-title">Citatorios</h3>
                 <p class="type-description">Registro y gestión de conciliaciones laborales</p>
             </div>
             <div class="type-card" onclick="selectType('demanda')">
                 <span class="type-icon">⚖️</span>
-                <h3 class="type-title">Demanda</h3>
+                <h3 class="type-title">Demandas</h3>
                 <p class="type-description">Registro y seguimiento de demandas laborales</p>
             </div>
         </div>
@@ -657,23 +656,34 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Nombre de la Empresa <span class="required">*</span></label>
-                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                        <label>Oficina Correspondiente <span class="required">*</span></label>
+                        <select name="ubicacion" required>
+                            <option value="">Seleccione la oficina</option>
+                            <option value="Veracruz">Veracruz</option>
+                            <option value="CDMX">Ciudad de México (CDMX)</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Nombre del Trabajador <span class="required">*</span></label>
-                        <input type="text" name="trabajador" required placeholder="Nombre completo">
+                        <label>Fecha de Notificación de la Demanda <span class="required">*</span></label>
+                        <input type="date" name="fechaNotificacion" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Ubicación <span class="required">*</span></label>
-                        <select name="ubicacion" required>
-                            <option value="">Seleccione la ubicación</option>
-                            <option value="Veracruz">Veracruz</option>
-                            <option value="CDMX">Ciudad de México (CDMX)</option>
-                        </select>
+                        <label>Nombre de la Empresa <span class="required">*</span></label>
+                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono de Contacto <span class="required">*</span></label>
+                        <input type="tel" name="telefono" required placeholder="10 dígitos" pattern="[0-9]{10}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre del Empleado <span class="required">*</span></label>
+                        <input type="text" name="empleado" required placeholder="Nombre completo">
                     </div>
                     <div class="form-group">
                         <label>Puesto <span class="required">*</span></label>
@@ -683,7 +693,7 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Salario Mensual <span class="required">*</span></label>
+                        <label>Salario Diario <span class="required">*</span></label>
                         <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="form-group">
@@ -702,19 +712,17 @@
 
                 <div class="form-group">
                     <label>Jornada de Labores <span class="required">*</span></label>
-                    <select name="jornada" required>
-                        <option value="">Seleccione la jornada laboral</option>
-                        <option value="Diurna (06:00 - 20:00)">Diurna (06:00 - 20:00)</option>
-                        <option value="Nocturna (20:00 - 06:00)">Nocturna (20:00 - 06:00)</option>
-                        <option value="Mixta">Mixta</option>
-                        <option value="Tiempo Completo (8 horas)">Tiempo Completo (8 horas)</option>
-                        <option value="Medio Tiempo (4 horas)">Medio Tiempo (4 horas)</option>
-                    </select>
+                    <input type="text" name="jornada" required placeholder="Ej: Diurna, Nocturna, Mixta">
                 </div>
 
                 <div class="form-group">
                     <label>Motivo de la Baja <span class="required">*</span></label>
                     <textarea name="motivo" required placeholder="Describa de manera clara y concisa las razones de la terminación de la relación laboral..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea name="observaciones" placeholder="Información adicional relevante (opcional)"></textarea>
                 </div>
 
                 <button type="submit" class="submit-btn">Registrar Citatorio</button>
@@ -749,23 +757,34 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Nombre de la Empresa <span class="required">*</span></label>
-                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                        <label>Oficina Correspondiente <span class="required">*</span></label>
+                        <select name="ubicacion" required>
+                            <option value="">Seleccione la oficina</option>
+                            <option value="Veracruz">Veracruz</option>
+                            <option value="CDMX">Ciudad de México (CDMX)</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Nombre del Trabajador <span class="required">*</span></label>
-                        <input type="text" name="trabajador" required placeholder="Nombre completo">
+                        <label>Fecha de Notificación de la Demanda <span class="required">*</span></label>
+                        <input type="date" name="fechaNotificacion" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Ubicación <span class="required">*</span></label>
-                        <select name="ubicacion" required>
-                            <option value="">Seleccione la ubicación</option>
-                            <option value="Veracruz">Veracruz</option>
-                            <option value="CDMX">Ciudad de México (CDMX)</option>
-                        </select>
+                        <label>Nombre de la Empresa <span class="required">*</span></label>
+                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono de Contacto <span class="required">*</span></label>
+                        <input type="tel" name="telefono" required placeholder="10 dígitos" pattern="[0-9]{10}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre del Empleado <span class="required">*</span></label>
+                        <input type="text" name="empleado" required placeholder="Nombre completo">
                     </div>
                     <div class="form-group">
                         <label>Puesto <span class="required">*</span></label>
@@ -775,7 +794,7 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Salario Mensual <span class="required">*</span></label>
+                        <label>Salario Diario <span class="required">*</span></label>
                         <input type="number" name="salario" required placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="form-group">
@@ -794,19 +813,17 @@
 
                 <div class="form-group">
                     <label>Jornada de Labores <span class="required">*</span></label>
-                    <select name="jornada" required>
-                        <option value="">Seleccione la jornada laboral</option>
-                        <option value="Diurna (06:00 - 20:00)">Diurna (06:00 - 20:00)</option>
-                        <option value="Nocturna (20:00 - 06:00)">Nocturna (20:00 - 06:00)</option>
-                        <option value="Mixta">Mixta</option>
-                        <option value="Tiempo Completo (8 horas)">Tiempo Completo (8 horas)</option>
-                        <option value="Medio Tiempo (4 horas)">Medio Tiempo (4 horas)</option>
-                    </select>
+                    <input type="text" name="jornada" required placeholder="Ej: Diurna, Nocturna, Mixta">
                 </div>
 
                 <div class="form-group">
                     <label>Motivo de la Baja <span class="required">*</span></label>
                     <textarea name="motivo" required placeholder="Describa de manera clara y concisa las razones de la terminación de la relación laboral..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea name="observaciones" placeholder="Información adicional relevante (opcional)"></textarea>
                 </div>
 
                 <button type="submit" class="submit-btn">Registrar Demanda</button>
@@ -1024,15 +1041,18 @@
                 folio: folio,
                 tipo: type,
                 fechaRegistro: new Date().toISOString(),
-                empresa: formData.get('empresa'),
-                trabajador: formData.get('trabajador'),
                 ubicacion: formData.get('ubicacion'),
+                fechaNotificacion: formData.get('fechaNotificacion'),
+                empresa: formData.get('empresa'),
+                telefono: formData.get('telefono'),
+                empleado: formData.get('empleado'),
                 puesto: formData.get('puesto'),
                 salario: formData.get('salario'),
                 fechaIngreso: formData.get('fechaIngreso'),
                 ultimoDia: formData.get('ultimoDia'),
                 jornada: formData.get('jornada'),
                 motivo: formData.get('motivo'),
+                observaciones: formData.get('observaciones') || '',
                 archivoPDF: `${folio}.pdf`,
                 clienteEmail: currentUser.email,
                 clienteNombre: currentUser.name,
