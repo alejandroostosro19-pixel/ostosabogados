@@ -51,8 +51,10 @@ exports.handler = async (event, context) => {
         const userId = process.env.OSTOS_USER_ID;
         
         // Crear sesión de subida en OneDrive
+        const fullPath = `RegistrosLaborales/${folderPath}/${fileName}`;
+        
         const uploadSession = await client
-            .api(`/users/${userId}/drive/root:/RegistrosLaborales/${folderPath}/${fileName}:/createUploadSession`)
+            .api(`/users/${userId}/drive/root:/${fullPath}:/createUploadSession`)
             .post({
                 item: {
                     "@microsoft.graph.conflictBehavior": "replace"
