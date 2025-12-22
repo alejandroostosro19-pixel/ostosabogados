@@ -265,7 +265,7 @@
         <div class="login-form-container">
             <div class="form-header">
                 <h2>Bienvenido</h2>
-                <p>Inicie sesión con su cuenta de Microsoft para acceder al sistema</p>
+                <p>Inicie sesión con su cuenta de Microsoft o con su email</p>
             </div>
 
             <div id="alertBox" class="alert"></div>
@@ -280,11 +280,28 @@
                 <span>Iniciar Sesión con Microsoft</span>
             </button>
 
+            <div style="text-align: center; margin: 25px 0; color: #999; font-size: 0.9rem;">
+                ───── o ─────
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-dark); font-weight: 600;">Email:</label>
+                <input type="email" id="emailInput" placeholder="ejemplo@correo.com" 
+                       style="width: 100%; padding: 16px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border 0.3s;"
+                       onfocus="this.style.borderColor='var(--primary-green)'"
+                       onblur="this.style.borderColor='#ddd'"
+                       onkeypress="if(event.key==='Enter') loginWithEmail()">
+            </div>
+
+            <button class="microsoft-btn" style="background: var(--primary-green); color: white; border: none;" onclick="loginWithEmail()">
+                Continuar con Email
+            </button>
+
             <div class="info-box">
                 <strong>📝 Instrucciones:</strong><br>
-                • Use su cuenta corporativa o personal de Microsoft<br>
-                • Cuentas compatibles: Outlook, Hotmail, Office 365<br>
-                • Solo necesita autorizar el acceso una vez
+                • Use su cuenta de Microsoft o cualquier email<br>
+                • Cuentas Microsoft: Outlook, Hotmail, Office 365<br>
+                • Email: Ingrese su correo electrónico
             </div>
         </div>
     </div>
@@ -375,6 +392,41 @@
                 
                 showAlert('Error al iniciar sesión. Por favor, intente nuevamente.');
             }
+        }
+
+        // Función de login con email
+        function loginWithEmail() {
+            const emailInput = document.getElementById('emailInput');
+            const email = emailInput.value.trim();
+
+            // Validar email
+            if (!email) {
+                showAlert('Por favor ingrese su email');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('Por favor ingrese un email válido');
+                return;
+            }
+
+            // Guardar información del usuario
+            const userData = {
+                email: email,
+                name: email.split('@')[0],
+                id: 'email-' + Date.now(),
+                loginTime: new Date().toISOString(),
+                loginMethod: 'email'
+            };
+            
+            sessionStorage.setItem('userSession', JSON.stringify(userData));
+            
+            showAlert(`Bienvenido, ${userData.name}. Redirigiendo...`, 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'sistema.html';
+            }, 1000);
         }
 
         // Manejar respuesta de redirección
