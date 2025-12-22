@@ -1,4 +1,4 @@
-// send-confirmation.js - CON RESEND
+// send-confirmation.js - CON RESEND (CORREGIDO)
 
 const { Resend } = require('resend');
 
@@ -29,10 +29,13 @@ exports.handler = async (event) => {
 
         const { folio, tipo, empresa, empleado, ubicacion, userEmail } = data;
 
+        console.log('📧 Enviando emails para:', folio);
+        console.log('Usuario:', userEmail);
+
         // ========================================
         // EMAIL 1: A LA EMPRESA (usuario logueado)
         // ========================================
-        const emailToCompany = await resend.emails.send({
+        const responseCompany = await resend.emails.send({
             from: 'Ostos Abogados <registros@ostosabogados.com>',
             to: userEmail,
             subject: `Confirmación de Registro - Folio ${folio}`,
@@ -93,10 +96,18 @@ exports.handler = async (event) => {
             `
         });
 
+        // Verificar si hubo error en email 1
+        if (responseCompany.error) {
+            console.error('❌ Error en email 1:', responseCompany.error);
+            throw new Error('Error enviando email a usuario: ' + responseCompany.error.message);
+        }
+
+        console.log('✅ Email 1 enviado - ID:', responseCompany.data?.id);
+
         // ========================================
         // EMAIL 2: A OSTOS ABOGADOS
         // ========================================
-        const emailToOstos = await resend.emails.send({
+        const responseOstos = await resend.emails.send({
             from: 'Sistema Registro <registros@ostosabogados.com>',
             to: 'registros@ostosabogados.com',
             subject: `Nuevo Registro - ${folio}`,
@@ -148,9 +159,15 @@ exports.handler = async (event) => {
             `
         });
 
+        // Verificar si hubo error en email 2
+        if (responseOstos.error) {
+            console.error('❌ Error en email 2:', responseOstos.error);
+            throw new Error('Error enviando email a Ostos: ' + responseOstos.error.message);
+        }
+
+        console.log('✅ Email 2 enviado - ID:', responseOstos.data?.id);
+
         console.log('✅ Emails enviados exitosamente');
-        console.log('Email 1 ID:', emailToCompany.id);
-        console.log('Email 2 ID:', emailToOstos.id);
 
         return {
             statusCode: 200,
@@ -159,14 +176,16 @@ exports.handler = async (event) => {
                 success: true,
                 message: 'Emails enviados correctamente',
                 emailIds: {
-                    company: emailToCompany.id,
-                    ostos: emailToOstos.id
+                    company: responseCompany.data?.id,
+                    ostos: responseOstos.data?.id
                 }
             })
         };
 
     } catch (error) {
         console.error('❌ Error enviando emails:', error);
+        console.error('Error completo:', JSON.stringify(error, null, 2));
+        
         return {
             statusCode: 500,
             headers,
