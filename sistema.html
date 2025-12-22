@@ -659,8 +659,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Fecha de Notificación de la Demanda <span class="required">*</span></label>
-                        <input type="date" name="fechaNotificacion" required>
+                        <label>Fecha y Hora de la Cita <span class="required">*</span></label>
+                        <input type="datetime-local" name="fechaCita" required>
                     </div>
                 </div>
 
@@ -865,7 +865,7 @@
             </p>
             <p class="modal-message" style="background: #f0f8f4; padding: 15px; border-radius: 6px; border-left: 4px solid var(--primary-green); margin-top: 20px;">
                 <strong>📞 Próximos pasos:</strong><br>
-                Un abogado de nuestro equipo se pondrá en contacto con usted en los próximos días para darle seguimiento a su caso.
+                Un abogado de nuestro equipo se pondrá en contacto con usted en los próximos 5 días hábiles para darle seguimiento a su caso.
             </p>
             <button class="modal-btn" onclick="closeModal()">Entendido</button>
         </div>
@@ -900,7 +900,7 @@
             const userSession = sessionStorage.getItem('userSession');
             
             if (!userSession) {
-                window.location.href = 'index-microsoft.html';
+                window.location.href = 'index.html';
                 return false;
             }
             
@@ -1203,6 +1203,30 @@
                 
                 // Mostrar modal de éxito
                 showSuccessModal(folio, type);
+                
+                // Enviar emails de confirmación
+                try {
+                    const userSession = sessionStorage.getItem('userSession');
+                    const user = userSession ? JSON.parse(userSession) : null;
+                    const userEmail = user ? user.email : data.clienteEmail;
+                    
+                    await fetch('/.netlify/functions/send-confirmation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            folio: folio,
+                            tipo: type,
+                            empresa: data.empresa,
+                            empleado: data.empleado,
+                            ubicacion: data.ubicacion,
+                            userEmail: userEmail
+                        })
+                    });
+                    console.log('✅ Emails de confirmación enviados');
+                } catch (emailError) {
+                    console.error('⚠️ Error enviando emails (registro exitoso):', emailError);
+                    // No fallar el registro si el email falla
+                }
                 
                 // Limpiar formulario
                 form.reset();
