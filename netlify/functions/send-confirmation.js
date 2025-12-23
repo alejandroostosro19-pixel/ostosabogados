@@ -1,4 +1,4 @@
-// send-confirmation.js - CON RESEND (CORREGIDO)
+// send-confirmation.js - CON RESEND Y DOMINIO .ORG
 
 const { Resend } = require('resend');
 
@@ -36,7 +36,7 @@ exports.handler = async (event) => {
         // EMAIL 1: A LA EMPRESA (usuario logueado)
         // ========================================
         const responseCompany = await resend.emails.send({
-            from: 'Ostos Abogados <registros@ostosabogados.com>',
+            from: 'Ostos Abogados <registros@ostosabogados.org>',
             to: userEmail,
             subject: `Confirmación de Registro - Folio ${folio}`,
             html: `
@@ -108,8 +108,8 @@ exports.handler = async (event) => {
         // EMAIL 2: A OSTOS ABOGADOS
         // ========================================
         const responseOstos = await resend.emails.send({
-            from: 'Sistema Registro <registros@ostosabogados.com>',
-            to: 'registros@ostosabogados.com',
+            from: 'Sistema Registro <registros@ostosabogados.org>',
+            to: 'registros@ostosabogados.org',
             subject: `Nuevo Registro - ${folio}`,
             html: `
 <!DOCTYPE html>
