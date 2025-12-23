@@ -109,7 +109,7 @@ exports.handler = async (event) => {
         // ========================================
         const responseOstos = await resend.emails.send({
             from: 'Sistema Registro <registros@ostosabogados.org>',
-            to: 'registros@ostosabogados.org',
+            to: 'registros@ostosabogados.com',
             subject: `Nuevo Registro - ${folio}`,
             html: `
 <!DOCTYPE html>
