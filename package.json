@@ -12,13 +12,7 @@
   "dependencies": {
     "@azure/identity": "^4.0.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
+    "isomorphic-fetch": "^3.0.0",
     "resend": "^3.0.0"
   }
-  {
-  "dependencies": {
-    "resend": "^3.0.0",
-    "@microsoft/microsoft-graph-client": "^3.0.7",
-    "isomorphic-fetch": "^3.0.0"
-  }
-}
 }
