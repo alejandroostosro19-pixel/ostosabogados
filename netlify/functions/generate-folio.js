@@ -1,7 +1,7 @@
-// generate-folio.js - Genera folios únicos consultando OneDrive
+// generate-folio-simple.js - Versión simplificada usando la función upload existente
 
 const { Client } = require('@microsoft/microsoft-graph-client');
-require('isomorphic-fetch');
+const { ClientSecretCredential } = require('@azure/identity');
 
 exports.handler = async (event) => {
     const headers = {
@@ -29,32 +29,23 @@ exports.handler = async (event) => {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Tipo inválido. Debe ser "citatorio" o "demanda"' })
+                body: JSON.stringify({ error: 'Tipo inválido' })
             };
         }
 
-        // Obtener access token
-        const tokenResponse = await fetch(`https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                client_id: process.env.CLIENT_ID,
-                client_secret: process.env.CLIENT_SECRET,
-                scope: 'https://graph.microsoft.com/.default',
-                grant_type: 'client_credentials'
-            })
-        });
+        // Usar ClientSecretCredential (igual que en upload.js)
+        const credential = new ClientSecretCredential(
+            process.env.TENANT_ID,
+            process.env.CLIENT_ID,
+            process.env.CLIENT_SECRET
+        );
 
-        if (!tokenResponse.ok) {
-            throw new Error('Error obteniendo token de acceso');
-        }
-
-        const { access_token } = await tokenResponse.json();
-
-        // Configurar cliente de Graph
-        const client = Client.init({
-            authProvider: (done) => {
-                done(null, access_token);
+        const client = Client.initWithMiddleware({
+            authProvider: {
+                getAccessToken: async () => {
+                    const tokenResponse = await credential.getToken('https://graph.microsoft.com/.default');
+                    return tokenResponse.token;
+                }
             }
         });
 
@@ -63,7 +54,6 @@ exports.handler = async (event) => {
         const prefix = tipo === 'citatorio' ? 'CIT' : 'DEM';
         const year = new Date().getFullYear();
 
-        // Obtener lista de carpetas en la carpeta principal
         const driveId = process.env.DRIVE_ID;
         const folderId = process.env.FOLDER_ID;
 
@@ -92,7 +82,6 @@ exports.handler = async (event) => {
                             .select('name')
                             .get();
 
-                        // Extraer nombres de carpetas (folios)
                         const folios = foliosResponse.value
                             .filter(item => item.folder && item.name.startsWith(prefix))
                             .map(item => item.name);
@@ -103,7 +92,6 @@ exports.handler = async (event) => {
             }
         } catch (error) {
             console.log('No hay folios previos o error al consultar:', error.message);
-            // Si no hay carpetas, empezamos desde 0
         }
 
         // Extraer números de folios existentes
@@ -144,6 +132,8 @@ exports.handler = async (event) => {
 
     } catch (error) {
         console.error('Error generando folio:', error);
+        console.error('Error details:', error.message);
+        
         return {
             statusCode: 500,
             headers,
