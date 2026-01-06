@@ -1214,7 +1214,7 @@
             const form = event.target;
             const submitBtn = form.querySelector('.submit-btn');
             const formData = new FormData(form);
-            const folio = generateFolio(type);
+            const folio = await generateFolio(type);
             
             // Crear objeto de datos
             const data = {
