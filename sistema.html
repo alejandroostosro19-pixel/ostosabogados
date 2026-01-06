@@ -639,14 +639,14 @@
 
             <form id="citatorioForm" onsubmit="submitForm(event, 'citatorio')">
                 <div class="form-group">
-                    <label>Documento PDF del Citatorio <span class="required">*</span></label>
+                    <label>Documentos PDF del Citatorio <span class="required">*</span></label>
                     <div class="file-upload-wrapper" onclick="document.getElementById('pdfCitatorio').click()">
                         <div class="upload-icon">📄</div>
-                        <div class="upload-text">Haga clic para seleccionar el archivo PDF</div>
-                        <div class="upload-subtext">o arrástrelo aquí (máx. 50MB)</div>
+                        <div class="upload-text">Haga clic para seleccionar los archivos PDF</div>
+                        <div class="upload-subtext">o arrástrelos aquí (máx. 75MB c/u) - Puede seleccionar múltiples archivos</div>
                         <div class="file-name-display" id="fileNameCitatorio"></div>
                     </div>
-                    <input type="file" id="pdfCitatorio" accept=".pdf" required onchange="handleFileSelect(this, 'citatorio')">
+                    <input type="file" id="pdfCitatorio" accept=".pdf" multiple required onchange="handleFileSelect(this, 'citatorio')">
                 </div>
 
                 <div class="form-row">
@@ -655,6 +655,7 @@
                         <select name="ubicacion" required>
                             <option value="">Seleccione la oficina</option>
                             <option value="Veracruz">Veracruz</option>
+                            <option value="Orizaba">Orizaba</option>
                             <option value="CDMX">Ciudad de México (CDMX)</option>
                         </select>
                     </div>
@@ -667,7 +668,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nombre de la Empresa <span class="required">*</span></label>
-                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                        <input type="text" name="empresa" required placeholder="Nombre de la empresa">
                     </div>
                     <div class="form-group">
                         <label>Teléfono de Contacto <span class="required">*</span></label>
@@ -707,7 +708,7 @@
 
                 <div class="form-group">
                     <label>Jornada de Labores <span class="required">*</span></label>
-                    <input type="text" name="jornada" required placeholder="Ej: Diurna, Nocturna, Mixta">
+                    <input type="text" name="jornada" required placeholder="08:00 a 17:00 horas">
                 </div>
 
                 <div class="form-group">
@@ -725,7 +726,7 @@
                     <div class="file-upload-wrapper" style="cursor: pointer; min-height: 80px;" onclick="document.getElementById('adicionales-citatorio').click()">
                         <div class="upload-icon">📎</div>
                         <div class="upload-text">Agregar archivos adicionales (PDF, imágenes, Word, etc.)</div>
-                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 50MB c/u)</div>
+                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 75MB c/u)</div>
                         <div class="file-name-display" id="adicionalesListCitatorio"></div>
                     </div>
                     <input type="file" id="adicionales-citatorio" accept="*/*" multiple style="display: none;" onchange="handleAdditionalFiles(this, 'citatorio')">
@@ -751,14 +752,14 @@
 
             <form id="demandaForm" onsubmit="submitForm(event, 'demanda')">
                 <div class="form-group">
-                    <label>Documento PDF de la Demanda <span class="required">*</span></label>
+                    <label>Documentos PDF de la Demanda <span class="required">*</span></label>
                     <div class="file-upload-wrapper" onclick="document.getElementById('pdfDemanda').click()">
                         <div class="upload-icon">📄</div>
-                        <div class="upload-text">Haga clic para seleccionar el archivo PDF</div>
-                        <div class="upload-subtext">o arrástrelo aquí (máx. 50MB)</div>
+                        <div class="upload-text">Haga clic para seleccionar los archivos PDF</div>
+                        <div class="upload-subtext">o arrástrelos aquí (máx. 75MB c/u) - Puede seleccionar múltiples archivos</div>
                         <div class="file-name-display" id="fileNameDemanda"></div>
                     </div>
-                    <input type="file" id="pdfDemanda" accept=".pdf" required onchange="handleFileSelect(this, 'demanda')">
+                    <input type="file" id="pdfDemanda" accept=".pdf" multiple required onchange="handleFileSelect(this, 'demanda')">
                 </div>
 
                 <div class="form-row">
@@ -767,6 +768,7 @@
                         <select name="ubicacion" required>
                             <option value="">Seleccione la oficina</option>
                             <option value="Veracruz">Veracruz</option>
+                            <option value="Orizaba">Orizaba</option>
                             <option value="CDMX">Ciudad de México (CDMX)</option>
                         </select>
                     </div>
@@ -779,7 +781,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nombre de la Empresa <span class="required">*</span></label>
-                        <input type="text" name="empresa" required placeholder="Razón social completa">
+                        <input type="text" name="empresa" required placeholder="Nombre de la empresa">
                     </div>
                     <div class="form-group">
                         <label>Teléfono de Contacto <span class="required">*</span></label>
@@ -819,7 +821,7 @@
 
                 <div class="form-group">
                     <label>Jornada de Labores <span class="required">*</span></label>
-                    <input type="text" name="jornada" required placeholder="Ej: Diurna, Nocturna, Mixta">
+                    <input type="text" name="jornada" required placeholder="08:00 a 17:00 horas">
                 </div>
 
                 <div class="form-group">
@@ -837,7 +839,7 @@
                     <div class="file-upload-wrapper" style="cursor: pointer; min-height: 80px;" onclick="document.getElementById('adicionales-demanda').click()">
                         <div class="upload-icon">📎</div>
                         <div class="upload-text">Agregar archivos adicionales (PDF, imágenes, Word, etc.)</div>
-                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 50MB c/u)</div>
+                        <div class="upload-subtext">Puede seleccionar múltiples archivos (máx. 75MB c/u)</div>
                         <div class="file-name-display" id="adicionalesListDemanda"></div>
                     </div>
                     <input type="file" id="adicionales-demanda" accept="*/*" multiple style="display: none;" onchange="handleAdditionalFiles(this, 'demanda')">
@@ -944,31 +946,44 @@
         }
 
         function handleFileSelect(input, type) {
-            const file = input.files[0];
-            if (file) {
-                if (file.size > 50 * 1024 * 1024) {
-                    alert('El archivo es demasiado grande. El tamaño máximo es 10MB.');
-                    input.value = '';
-                    return;
-                }
-                
-                uploadedFiles[type] = file;
-                const fileNameElement = document.getElementById(`fileName${type.charAt(0).toUpperCase() + type.slice(1)}`);
-                if (fileNameElement) {
-                    fileNameElement.innerHTML = `<span style="color: var(--primary-green);">✓</span> ${file.name}`;
-                }
-                
-                // Buscar el wrapper correctamente
-                const wrapper = input.parentElement;
-                if (wrapper && wrapper.classList.contains('file-upload-wrapper')) {
-                    wrapper.classList.add('has-file');
+            const files = Array.from(input.files);
+            
+            if (files.length === 0) return;
+            
+            // Validar tamaño de cada archivo (75MB máximo)
+            const maxSize = 75 * 1024 * 1024; // 75MB
+            const invalidFiles = files.filter(file => file.size > maxSize);
+            
+            if (invalidFiles.length > 0) {
+                alert(`Los siguientes archivos son demasiado grandes (máx. 75MB):\n${invalidFiles.map(f => f.name).join('\n')}`);
+                input.value = '';
+                return;
+            }
+            
+            // Guardar TODOS los archivos como array
+            uploadedFiles[type] = files;
+            
+            // Mostrar lista de archivos
+            const fileNameElement = document.getElementById(`fileName${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            if (fileNameElement) {
+                if (files.length === 1) {
+                    fileNameElement.innerHTML = `<span style="color: var(--primary-green);">✓</span> ${files[0].name}`;
                 } else {
-                    // Si el input no está directamente en el wrapper, buscar en el form
-                    const form = input.closest('form');
-                    if (form) {
-                        const wrappers = form.querySelectorAll('.file-upload-wrapper');
-                        wrappers.forEach(w => w.classList.add('has-file'));
-                    }
+                    const fileList = files.map(f => `<span style="color: var(--primary-green);">✓</span> ${f.name}`).join('<br>');
+                    fileNameElement.innerHTML = `<strong>${files.length} archivos seleccionados:</strong><br>${fileList}`;
+                }
+            }
+            
+            // Buscar el wrapper correctamente
+            const wrapper = input.parentElement;
+            if (wrapper && wrapper.classList.contains('file-upload-wrapper')) {
+                wrapper.classList.add('has-file');
+            } else {
+                // Si el input no está directamente en el wrapper, buscar en el form
+                const form = input.closest('form');
+                if (form) {
+                    const wrappers = form.querySelectorAll('.file-upload-wrapper');
+                    wrappers.forEach(w => w.classList.add('has-file'));
                 }
             }
         }
@@ -977,10 +992,10 @@
             const newFiles = Array.from(input.files);
             const listElement = document.getElementById(`adicionalesList${type.charAt(0).toUpperCase() + type.slice(1)}`);
             
-            // Validar tamaño de los nuevos archivos
+            // Validar tamaño de los nuevos archivos (75MB máximo)
             for (let file of newFiles) {
-                if (file.size > 50 * 1024 * 1024) {
-                    alert(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 50MB.`);
+                if (file.size > 75 * 1024 * 1024) {
+                    alert(`El archivo "${file.name}" es demasiado grande. El tamaño máximo es 75MB.`);
                     input.value = '';
                     return;
                 }
@@ -1029,23 +1044,41 @@
             }
         }
 
-        function generateFolio(type) {
-            const prefix = type === 'citatorio' ? 'CIT' : 'DEM';
-            const year = new Date().getFullYear();
-            
-            // Obtener último número consecutivo del localStorage
-            const storageKey = `lastFolio_${prefix}_${year}`;
-            let lastNumber = parseInt(localStorage.getItem(storageKey) || '0');
-            
-            // Incrementar
-            lastNumber++;
-            
-            // Guardar nuevo número
-            localStorage.setItem(storageKey, lastNumber.toString());
-            
-            // Formato: CIT-2024-0001 o DEM-2024-0001
-            const consecutivo = String(lastNumber).padStart(4, '0');
-            return `${prefix}-${year}-${consecutivo}`;
+        async function generateFolio(type) {
+            try {
+                console.log(`Generando folio para: ${type}`);
+                
+                // Llamar a función de Netlify para generar folio único
+                const response = await fetch('/.netlify/functions/generate-folio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tipo: type })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al generar folio');
+                }
+
+                const data = await response.json();
+                console.log(`Folio generado: ${data.folio} (Folios existentes: ${data.foliosExistentes})`);
+                
+                return data.folio;
+                
+            } catch (error) {
+                console.error('Error generando folio:', error);
+                
+                // FALLBACK: Si falla la generación en backend, usar localStorage
+                // (esto es temporal hasta que se suba el archivo)
+                console.warn('Usando fallback con localStorage');
+                const prefix = type === 'citatorio' ? 'CIT' : 'DEM';
+                const year = new Date().getFullYear();
+                const storageKey = `lastFolio_${prefix}_${year}`;
+                let lastNumber = parseInt(localStorage.getItem(storageKey) || '0');
+                lastNumber++;
+                localStorage.setItem(storageKey, lastNumber.toString());
+                const consecutivo = String(lastNumber).padStart(4, '0');
+                return `${prefix}-${year}-${consecutivo}`;
+            }
         }
 
         // ============================================
@@ -1059,9 +1092,22 @@
                 
                 console.log('Iniciando subida directa a OneDrive...');
                 
-                // 1. Subir PDF principal
-                await uploadFileDirect(file, `${folio}.pdf`, folderPath);
-                console.log('PDF principal subido ✓');
+                // 1. Subir PDF principal (puede ser uno o múltiples)
+                const pdfFiles = Array.isArray(file) ? file : [file];
+                
+                if (pdfFiles.length === 1) {
+                    // Un solo PDF
+                    await uploadFileDirect(pdfFiles[0], `${folio}.pdf`, folderPath);
+                    console.log('PDF principal subido ✓');
+                } else {
+                    // Múltiples PDFs
+                    console.log(`Subiendo ${pdfFiles.length} PDFs principales...`);
+                    for (let i = 0; i < pdfFiles.length; i++) {
+                        const fileName = `${folio}_parte${i + 1}.pdf`;
+                        await uploadFileDirect(pdfFiles[i], fileName, folderPath);
+                        console.log(`✓ ${fileName}`);
+                    }
+                }
                 
                 // 2. Subir archivos adicionales
                 if (archivosAdicionales && archivosAdicionales.length > 0) {
