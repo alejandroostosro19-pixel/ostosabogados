@@ -35,9 +35,9 @@ exports.handler = async (event) => {
 
         // Usar ClientSecretCredential (igual que en upload.js)
         const credential = new ClientSecretCredential(
-            process.env.TENANT_ID,
-            process.env.CLIENT_ID,
-            process.env.CLIENT_SECRET
+            process.env.AZURE_TENANT_ID,
+            process.env.AZURE_CLIENT_ID,
+            process.env.AZURE_CLIENT_SECRET
         );
 
         const client = Client.initWithMiddleware({
@@ -54,44 +54,35 @@ exports.handler = async (event) => {
         const prefix = tipo === 'citatorio' ? 'CIT' : 'DEM';
         const year = new Date().getFullYear();
 
-        const driveId = process.env.DRIVE_ID;
-        const folderId = process.env.FOLDER_ID;
+        const userId = process.env.OSTOS_USER_ID;
 
         let allFolios = [];
 
         try {
-            // Buscar carpeta de tipo (Citatorios o Demandas)
-            const tipoFolderResponse = await client
-                .api(`/drives/${driveId}/items/${folderId}/children`)
-                .filter(`name eq '${folderName}'`)
-                .get();
+            // Buscar subcarpetas en Citatorios o Demandas (Veracruz, Orizaba, CDMX)
+            const ubicaciones = ['Veracruz', 'Orizaba', 'CDMX'];
+            
+            for (const ubicacion of ubicaciones) {
+                try {
+                    const folderPath = `RegistrosLaborales/${folderName}/${ubicacion}`;
+                    
+                    // Obtener carpetas (folios) en cada ubicación
+                    const foliosResponse = await client
+                        .api(`/users/${userId}/drive/root:/${folderPath}:/children`)
+                        .select('name,folder')
+                        .get();
 
-            if (tipoFolderResponse.value && tipoFolderResponse.value.length > 0) {
-                const tipoFolderId = tipoFolderResponse.value[0].id;
+                    const folios = foliosResponse.value
+                        .filter(item => item.folder && item.name.startsWith(prefix))
+                        .map(item => item.name);
 
-                // Obtener todas las ubicaciones (Veracruz, Orizaba, CDMX)
-                const ubicacionesResponse = await client
-                    .api(`/drives/${driveId}/items/${tipoFolderId}/children`)
-                    .get();
-
-                // Para cada ubicación, obtener los folios
-                for (const ubicacion of ubicacionesResponse.value) {
-                    if (ubicacion.folder) {
-                        const foliosResponse = await client
-                            .api(`/drives/${driveId}/items/${ubicacion.id}/children`)
-                            .select('name')
-                            .get();
-
-                        const folios = foliosResponse.value
-                            .filter(item => item.folder && item.name.startsWith(prefix))
-                            .map(item => item.name);
-
-                        allFolios = allFolios.concat(folios);
-                    }
+                    allFolios = allFolios.concat(folios);
+                } catch (error) {
+                    console.log(`No hay folios en ${ubicacion} o carpeta no existe:`, error.message);
                 }
             }
         } catch (error) {
-            console.log('No hay folios previos o error al consultar:', error.message);
+            console.log('Error al consultar folios:', error.message);
         }
 
         // Extraer números de folios existentes
