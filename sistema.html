@@ -1210,12 +1210,25 @@
         // ============================================
         async function submitForm(event, type) {
             event.preventDefault();
-            
+
             const form = event.target;
             const submitBtn = form.querySelector('.submit-btn');
+
+            // Disable immediately to prevent concurrent submissions
+            if (submitBtn.disabled) return;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Generando folio...';
+
             const formData = new FormData(form);
             const folio = await generateFolio(type);
-            
+
+            if (!folio || typeof folio !== 'string' || folio.trim() === '') {
+                submitBtn.disabled = false;
+                submitBtn.textContent = type === 'citatorio' ? 'Registrar Citatorio' : 'Registrar Demanda';
+                alert('Error al generar el folio. Por favor, intente nuevamente o contacte al administrador.');
+                return;
+            }
+
             // Crear objeto de datos
             const data = {
                 folio: folio,
@@ -1240,8 +1253,6 @@
             };
 
             try {
-                // Deshabilitar botón
-                submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> Guardando archivos...';
                 
                 // Subir PDF y JSON a OneDrive (la función maneja ambos)
