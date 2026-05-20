@@ -1179,8 +1179,7 @@
                     body: chunk
                 });
                 
-                // 200/201 = complete, 308 = chunk accepted (Resume Incomplete), 202 = accepted
-                if (!uploadResponse.ok && uploadResponse.status !== 308) {
+                if (!uploadResponse.ok && uploadResponse.status !== 202) {
                     throw new Error(`Error subiendo chunk: ${uploadResponse.status}`);
                 }
                 
