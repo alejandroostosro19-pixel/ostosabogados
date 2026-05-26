@@ -1155,34 +1155,54 @@
                     folderPath: folderPath
                 })
             });
-            
+
             if (!sessionResponse.ok) {
-                throw new Error('Error creando sesión de subida');
+                throw new Error('No se pudo conectar con el servidor de archivos. Verifique su conexión e intente nuevamente.');
             }
-            
+
             const { uploadUrl } = await sessionResponse.json();
-            
-            // 2. Subir archivo en chunks (para archivos grandes)
+
+            // 2. Subir archivo en chunks con reintentos automáticos
             const chunkSize = 5 * 1024 * 1024; // 5MB chunks
             const fileSize = file.size;
             let start = 0;
-            
+
             while (start < fileSize) {
                 const end = Math.min(start + chunkSize, fileSize);
                 const chunk = file.slice(start, end);
-                
-                const uploadResponse = await fetch(uploadUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Range': `bytes ${start}-${end - 1}/${fileSize}`
-                    },
-                    body: chunk
-                });
-                
-                if (!uploadResponse.ok && uploadResponse.status !== 202) {
-                    throw new Error(`Error subiendo chunk: ${uploadResponse.status}`);
+
+                let lastError;
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        const uploadResponse = await fetch(uploadUrl, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Range': `bytes ${start}-${end - 1}/${fileSize}`
+                            },
+                            body: chunk
+                        });
+
+                        if (!uploadResponse.ok && uploadResponse.status !== 202) {
+                            throw new Error(`El servidor rechazó el archivo (código ${uploadResponse.status}). Intente con otro archivo o contacte al administrador.`);
+                        }
+
+                        lastError = null;
+                        break;
+                    } catch (err) {
+                        lastError = err;
+                        if (attempt < 2) {
+                            await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+                        }
+                    }
                 }
-                
+
+                if (lastError) {
+                    const isNetwork = lastError instanceof TypeError;
+                    throw new Error(isNetwork
+                        ? 'Error de conexión al subir el archivo. Verifique su internet e intente nuevamente.'
+                        : lastError.message
+                    );
+                }
                 start = end;
             }
         }
@@ -1310,7 +1330,7 @@
                 console.error('Error al procesar formulario:', error);
                 submitBtn.disabled = false;
                 submitBtn.textContent = type === 'citatorio' ? 'Registrar Citatorio' : 'Registrar Demanda';
-                alert('Error al guardar el registro. Por favor, intente nuevamente o contacte al administrador.');
+                alert(error.message || 'Error al guardar el registro. Por favor, intente nuevamente o contacte al administrador.');
             }
         }
 
