@@ -1310,7 +1310,8 @@
                 console.error('Error al procesar formulario:', error);
                 submitBtn.disabled = false;
                 submitBtn.textContent = type === 'citatorio' ? 'Registrar Citatorio' : 'Registrar Demanda';
-                alert('Error al guardar el registro. Por favor, intente nuevamente o contacte al administrador.');
+                const msg = error?.message || 'Error desconocido';
+                alert(`Error al guardar el registro: ${msg}\n\nIntente nuevamente o contacte al administrador.`);
             }
         }
 
