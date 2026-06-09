@@ -73,7 +73,7 @@ exports.handler = async (event) => {
                         .get();
 
                     const folios = foliosResponse.value
-                        .filter(item => item.folder && item.name.startsWith(prefix) && item.folder.childCount > 0)
+                        .filter(item => item.folder && item.name.startsWith(prefix))
                         .map(item => item.name);
 
                     allFolios = allFolios.concat(folios);
