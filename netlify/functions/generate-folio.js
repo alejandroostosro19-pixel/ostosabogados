@@ -58,31 +58,35 @@ exports.handler = async (event) => {
 
         let allFolios = [];
 
-        try {
-            // Buscar subcarpetas en Citatorios o Demandas (Veracruz, Orizaba, CDMX)
-            const ubicaciones = ['Veracruz', 'Orizaba', 'CDMX'];
-            
-            for (const ubicacion of ubicaciones) {
-                try {
-                    const folderPath = `RegistrosLaborales/${folderName}/${ubicacion}`;
-                    
-                    // Obtener carpetas (folios) en cada ubicación
-                    const foliosResponse = await client
-                        .api(`/users/${userId}/drive/root:/${folderPath}:/children`)
-                        .select('name,folder')
-                        .get();
+        // Buscar subcarpetas en Citatorios o Demandas (Veracruz, Orizaba, CDMX)
+        const ubicaciones = ['Veracruz', 'Orizaba', 'CDMX'];
 
-                    const folios = foliosResponse.value
-                        .filter(item => item.folder && item.name.startsWith(prefix))
-                        .map(item => item.name);
+        for (const ubicacion of ubicaciones) {
+            try {
+                const folderPath = `RegistrosLaborales/${folderName}/${ubicacion}`;
 
-                    allFolios = allFolios.concat(folios);
-                } catch (error) {
-                    console.log(`No hay folios en ${ubicacion} o carpeta no existe:`, error.message);
+                const foliosResponse = await client
+                    .api(`/users/${userId}/drive/root:/${folderPath}:/children`)
+                    .select('name,folder')
+                    .get();
+
+                const folios = foliosResponse.value
+                    .filter(item => item.folder && item.name.startsWith(prefix))
+                    .map(item => item.name);
+
+                allFolios = allFolios.concat(folios);
+            } catch (error) {
+                const status = error.statusCode || error.status;
+                if (status === 404) {
+                    // La carpeta de esta ubicación todavía no existe, es normal
+                    console.log(`Carpeta ${ubicacion} aún no existe`);
+                } else {
+                    // Cualquier otro error (auth, red, throttling) es peligroso:
+                    // no podemos saber qué folios existen → abortar para evitar duplicados
+                    console.error(`Error consultando folios en ${ubicacion}:`, error.message);
+                    throw new Error(`No se pudieron verificar los folios existentes. Intente nuevamente en unos segundos.`);
                 }
             }
-        } catch (error) {
-            console.log('Error al consultar folios:', error.message);
         }
 
         // Extraer números de folios existentes
