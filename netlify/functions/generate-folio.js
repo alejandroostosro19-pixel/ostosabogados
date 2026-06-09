@@ -65,16 +65,22 @@ exports.handler = async (event) => {
             try {
                 const folderPath = `RegistrosLaborales/${folderName}/${ubicacion}`;
 
-                const foliosResponse = await client
+                let response = await client
                     .api(`/users/${userId}/drive/root:/${folderPath}:/children`)
                     .select('name,folder')
                     .get();
 
-                const folios = foliosResponse.value
-                    .filter(item => item.folder && item.name.startsWith(prefix))
-                    .map(item => item.name);
-
-                allFolios = allFolios.concat(folios);
+                while (true) {
+                    const folios = response.value
+                        .filter(item => item.folder && item.name.startsWith(prefix))
+                        .map(item => item.name);
+                    allFolios = allFolios.concat(folios);
+                    if (response['@odata.nextLink']) {
+                        response = await client.api(response['@odata.nextLink']).get();
+                    } else {
+                        break;
+                    }
+                }
             } catch (error) {
                 const status = error.statusCode || error.status;
                 if (status === 404) {
