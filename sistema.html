@@ -1157,9 +1157,10 @@
             });
             
             if (!sessionResponse.ok) {
-                throw new Error('Error creando sesión de subida');
+                const sessionError = await sessionResponse.json().catch(() => ({}));
+                throw new Error(sessionError.error || 'Error creando sesión de subida');
             }
-            
+
             const { uploadUrl } = await sessionResponse.json();
             
             // 2. Subir archivo en chunks (para archivos grandes)

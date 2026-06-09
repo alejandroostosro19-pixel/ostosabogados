@@ -74,12 +74,23 @@ exports.handler = async (event, context) => {
 
     } catch (error) {
         console.error('Error creando sesión de subida:', error);
+
+        if (error.statusCode === 409 && error.code === 'nameAlreadyExists') {
+            return {
+                statusCode: 409,
+                headers,
+                body: JSON.stringify({
+                    error: 'Ya hay una subida en curso para este archivo. Espere un momento e intente nuevamente.'
+                })
+            };
+        }
+
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 error: 'Error creando sesión de subida',
-                details: error.message 
+                details: error.message
             })
         };
     }
