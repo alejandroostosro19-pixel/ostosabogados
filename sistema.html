@@ -1253,16 +1253,9 @@
                 clienteId: currentUser.id
             };
 
-            if (!uploadedFiles[type] || uploadedFiles[type].length === 0) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = type === 'citatorio' ? 'Registrar Citatorio' : 'Registrar Demanda';
-                alert('Por favor, seleccione al menos un archivo PDF antes de registrar.');
-                return;
-            }
-
             try {
                 submitBtn.innerHTML = '<span class="spinner"></span> Guardando archivos...';
-
+                
                 // Subir PDF y JSON a OneDrive (la función maneja ambos)
                 await uploadToOneDrive(uploadedFiles[type], folio, type, data, additionalFiles[type] || []);
                 
